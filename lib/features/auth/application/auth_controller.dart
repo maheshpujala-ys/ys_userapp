@@ -7,20 +7,23 @@ import 'package:yellowspotuser/features/auth/domain/app_user.dart';
 class AuthController extends StateNotifier<AsyncValue<AppUser?>> {
   final AuthRepository _authRepository;
   final FlutterSecureStorage _secureStorage;
+  final StateNotifierProviderRef _ref;
 
-  AuthController(this._authRepository, this._secureStorage) : super(const AsyncValue.loading()) { // Start in a loading state
+  AuthController(this._authRepository, this._secureStorage, this._ref) : super(const AsyncValue.loading()) {
     tryAutoLogin();
   }
 
   static final provider = StateNotifierProvider<AuthController, AsyncValue<AppUser?>>((ref) {
-    return AuthController(ref.watch(AuthRepository.provider), ref.watch(secureStorageProvider));
+    return AuthController(ref.watch(AuthRepository.provider), ref.watch(secureStorageProvider), ref);
   });
 
   Future<void> tryAutoLogin() async {
     final token = await _secureStorage.read(key: 'auth_token');
     if (token != null) {
       if (token == 'multi-role-token') {
-        state = AsyncValue.data(AppUser(id: 'admin1', email: 'admin@test.com', name: 'Admin User', roles: [UserRole.admin, UserRole.user], token: token));
+        final user = AppUser(id: 'admin1', email: 'admin@test.com', name: 'Admin User', roles: [UserRole.admin, UserRole.user], token: token);
+        _ref.read(isAdminViewProvider.notifier).state = true; // Set admin view by default
+        state = AsyncValue.data(user);
       } else if (token == 'user-token' || token == 'new-user-token') {
         state = AsyncValue.data(AppUser(id: 'user1', email: 'user@test.com', name: 'Test User', roles: [UserRole.user], token: token));
       } else {
@@ -36,6 +39,11 @@ class AuthController extends StateNotifier<AsyncValue<AppUser?>> {
     state = await AsyncValue.guard(() async {
       final user = await _authRepository.login(email, password);
       await _secureStorage.write(key: 'auth_token', value: user.token);
+      
+      if (user.roles.contains(UserRole.admin)) {
+        _ref.read(isAdminViewProvider.notifier).state = true; // Set admin view on login
+      }
+      
       return user;
     });
   }
@@ -52,8 +60,6 @@ class AuthController extends StateNotifier<AsyncValue<AppUser?>> {
   Future<void> forgotPassword(String email) async {
     state = const AsyncValue.loading();
     final result = await AsyncValue.guard(() => _authRepository.forgotPassword(email));
-    // We reset the state back to data(null) on success so the UI can react, 
-    // or handle success via listener in the screen.
     state = result.when(
       data: (_) => const AsyncValue.data(null),
       error: (e, st) => AsyncValue.error(e, st),
@@ -73,6 +79,7 @@ class AuthController extends StateNotifier<AsyncValue<AppUser?>> {
   Future<void> logout() async {
     state = const AsyncValue.loading();
     await _secureStorage.delete(key: 'auth_token');
+    _ref.read(isAdminViewProvider.notifier).state = false; // Reset view on logout
     state = const AsyncValue.data(null);
   }
 }

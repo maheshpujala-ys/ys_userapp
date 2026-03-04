@@ -6,6 +6,7 @@ import 'package:yellowspotuser/features/admin/dashboard/application/admin_contro
 import 'package:yellowspotuser/features/admin/entry_exit/screens/entry_exit_screen.dart';
 import 'package:yellowspotuser/features/admin/requests/screens/requests_screen.dart';
 import 'package:yellowspotuser/features/admin/residents/screens/add_resident_screen.dart';
+import 'package:yellowspotuser/features/admin/residents/screens/create_visitor_pass_screen.dart';
 import 'package:yellowspotuser/features/admin/security/screens/security_screen.dart';
 import 'package:yellowspotuser/features/admin/smart_cards/screens/add_smart_card_screen.dart';
 import 'package:yellowspotuser/features/admin/vehicles/screens/add_vehicle_screen.dart';
@@ -57,6 +58,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
                       error: (error, stackTrace) => Center(child: Text(error.toString())),
                     ),
                     const SizedBox(height: 24),
+                    const Text('Admin Actions', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 12),
                     _buildActionButtons(context),
                     const SizedBox(height: 16),
                   ],
@@ -118,7 +121,7 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
                 icon: const Icon(Icons.near_me_outlined, color: Colors.black, size: 18),
                 label: const Text('Back to User', style: TextStyle(color: Colors.black, fontSize: 13, fontWeight: FontWeight.bold)),
                 onPressed: () {
-                  Navigator.of(context).push(MaterialPageRoute(builder: (context) => const HomeScreen()));
+                  ref.read(isAdminViewProvider.notifier).state = false;
                 },
               ),
             ),
@@ -179,61 +182,86 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
   }
 
   Widget _buildActionButtons(BuildContext context) {
-    return Row(
+    return GridView.count(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisCount: 2,
+      crossAxisSpacing: 12,
+      mainAxisSpacing: 12,
+      childAspectRatio: 1.8,
       children: [
         _buildCircularActionButton(
           context, 
           'Add Resident', 
           Icons.person_add_alt_1_outlined, 
-          Colors.yellow[100]!, // Lighter Yellow
-          () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => const AddResidentScreen())),
+          Colors.yellow[100]!,
+          () => showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            builder: (context) => const AddResidentScreen(),
+          ),
         ),
-        const SizedBox(width: 12),
         _buildCircularActionButton(
           context, 
           'Add Vehicle', 
           Icons.local_shipping_outlined, 
-          Colors.teal[100]!, // Lighter Teal
-          () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => const AddVehicleScreen())),
+          Colors.teal[100]!,
+          () => showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            builder: (context) => const AddVehicleScreen(),
+          ),
         ),
-        const SizedBox(width: 12),
         _buildCircularActionButton(
           context, 
           'Add Smart Card', 
           Icons.credit_card_outlined, 
-          Colors.blue[100]!, // Lighter Blue
-          () => Navigator.of(context).push(MaterialPageRoute(builder: (context) => const AddSmartCardScreen())),
+          Colors.blue[100]!,
+          () => showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            builder: (context) => const AddSmartCardScreen(),
+          ),
+        ),
+        _buildCircularActionButton(
+          context, 
+          'Visitor Pass', 
+          Icons.qr_code_scanner, 
+          Colors.orange[100]!,
+          () => showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            builder: (context) => const CreateVisitorPassScreen(),
+          ),
         ),
       ],
     );
   }
 
   Widget _buildCircularActionButton(BuildContext context, String label, IconData icon, Color color, VoidCallback onTap) {
-    return Expanded(
-      child: InkWell(
-        onTap: onTap,
-        child: Container(
-          height: 100,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 28, color: Colors.black87),
-              const SizedBox(height: 8),
-              Text(
-                label, 
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 12, 
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 28, color: Colors.black87),
+            const SizedBox(height: 8),
+            Text(
+              label, 
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 13, 
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
