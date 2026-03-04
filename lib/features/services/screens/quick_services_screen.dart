@@ -123,16 +123,16 @@ class QuickServicesScreen extends ConsumerWidget {
               mainAxisSpacing: 12,
               childAspectRatio: aspectRatio,
               children: [
-                _buildOtherServiceIcon(Icons.phone_android, 'Mobile Recharge'),
-                _buildOtherServiceIcon(Icons.tv, 'DTH Recharge'),
-                _buildOtherServiceIcon(Icons.lightbulb_outline, 'Electricity Bill'),
-                _buildOtherServiceIcon(Icons.water_drop_outlined, 'Water Bill'),
-                _buildOtherServiceIcon(Icons.local_fire_department_outlined, 'Gas Bill'),
-                _buildOtherServiceIcon(Icons.credit_card, 'Credit Card'),
-                _buildOtherServiceIcon(Icons.shield_outlined, 'Insurance'),
-                _buildOtherServiceIcon(Icons.wifi, 'Broadband'),
-                _buildOtherServiceIcon(Icons.tram, 'Metro Card'),
-                _buildOtherServiceIcon(Icons.phone_in_talk_outlined, 'Landline'),
+                _buildOtherServiceIcon(Icons.phone_android, 'Mobile Recharge', Colors.blue),
+                _buildOtherServiceIcon(Icons.tv, 'DTH Recharge', Colors.purple),
+                _buildOtherServiceIcon(Icons.lightbulb_outline, 'Electricity Bill', Colors.amber),
+                _buildOtherServiceIcon(Icons.water_drop_outlined, 'Water Bill', Colors.lightBlue),
+                _buildOtherServiceIcon(Icons.local_fire_department_outlined, 'Gas Bill', Colors.deepOrange),
+                _buildOtherServiceIcon(Icons.credit_card, 'Credit Card', Colors.indigo),
+                _buildOtherServiceIcon(Icons.shield_outlined, 'Insurance', Colors.teal),
+                _buildOtherServiceIcon(Icons.wifi, 'Broadband', Colors.cyan),
+                _buildOtherServiceIcon(Icons.tram, 'Metro Card', Colors.pink),
+                _buildOtherServiceIcon(Icons.phone_in_talk_outlined, 'Landline', Colors.blueGrey),
               ],
             ),
           )
@@ -141,21 +141,21 @@ class QuickServicesScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildOtherServiceIcon(IconData icon, String label) {
+  Widget _buildOtherServiceIcon(IconData icon, String label, Color color) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         CircleAvatar(
           radius: 22, 
-          backgroundColor: Colors.grey[100],
-          child: Icon(icon, size: 22, color: Colors.grey[700]),
+          backgroundColor: color.withOpacity(0.1),
+          child: Icon(icon, size: 22, color: color),
         ),
         const SizedBox(height: 6),
         Flexible(
           child: Text(
             label,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 10, height: 1.1),
+            style: const TextStyle(fontSize: 10, height: 1.1, fontWeight: FontWeight.w500),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
@@ -274,7 +274,7 @@ class QuickServicesScreen extends ConsumerWidget {
                   label, 
                   textAlign: TextAlign.center, 
                   style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 9), 
-                  maxLines: 2, 
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),

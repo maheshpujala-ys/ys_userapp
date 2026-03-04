@@ -276,6 +276,8 @@ class VehicleListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool is4W = vehicle.type == VehicleType.fourWheeler;
+
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -283,7 +285,11 @@ class VehicleListItem extends StatelessWidget {
         padding: const EdgeInsets.all(12.0),
         child: Row(
           children: [
-            Text(vehicle.type == VehicleType.fourWheeler ? '4W' : '2W', style: const TextStyle(fontWeight: FontWeight.bold)),
+            Icon(
+              is4W ? Icons.directions_car_filled_outlined : Icons.motorcycle_outlined,
+              size: 24,
+              color: is4W ? Colors.blueGrey[700] : Colors.teal[700],
+            ),
             const SizedBox(width: 12),
             _buildPlate(vehicle.plateType, vehicle.number),
             const SizedBox(width: 8),

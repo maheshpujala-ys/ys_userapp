@@ -22,7 +22,7 @@ class BookACarScreen extends ConsumerWidget {
           children: [
             _buildPromoBanner(),
             const SizedBox(height: 24),
-            _buildSectionHeader(icon: Icons.send_outlined, title: 'Book a Ride'),
+            _buildSectionHeader(icon: Icons.local_taxi_outlined, title: 'Book a Ride'),
             _buildRideSharingGrid(),
             const SizedBox(height: 24),
             _buildSectionHeader(icon: Icons.shopping_cart_outlined, title: 'Buy or Sell Cars'),
@@ -51,7 +51,7 @@ class BookACarScreen extends ConsumerWidget {
                   const Text('First Ride Free!', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black)),
                   const Text('Get up to ₹100 off on your first cab ride', style: TextStyle(color: Colors.black87)),
                   const SizedBox(height: 8),
-                  Chip(label: const Text('YELLOWFIRST'), backgroundColor: Colors.yellow[700]),
+                  Chip(label: const Text('YELLOWFIRST', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)), backgroundColor: Colors.yellow[700]),
                 ],
               ),
             ),
@@ -63,12 +63,15 @@ class BookACarScreen extends ConsumerWidget {
   }
 
   Widget _buildSectionHeader({required IconData icon, required String title}) {
-    return Row(
-      children: [
-        Icon(icon, color: Colors.grey[600]),
-        const SizedBox(width: 8),
-        Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-      ],
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12.0),
+      child: Row(
+        children: [
+          Icon(icon, color: Colors.blue[800]),
+          const SizedBox(width: 8),
+          Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        ],
+      ),
     );
   }
 
@@ -78,32 +81,38 @@ class BookACarScreen extends ConsumerWidget {
       physics: const NeverScrollableScrollPhysics(),
       crossAxisCount: 2,
       childAspectRatio: 2.5,
+      crossAxisSpacing: 8,
+      mainAxisSpacing: 8,
       children: [
-        _buildRideServiceCard(name: 'Uber', subtitle: 'Ride with Uber', svgAsset: 'assets/icons/uber_logo.svg'),
-        _buildRideServiceCard(name: 'Ola', subtitle: 'Book Ola Cabs', svgAsset: 'assets/icons/ola_logo.svg'),
-        _buildRideServiceCard(name: 'Rapido', subtitle: 'Bike Taxi', svgAsset: 'assets/icons/rapido_logo.svg'),
-        _buildRideServiceCard(name: 'inDrive', subtitle: 'Negotiate your fare'), // Placeholder
+        _buildRideServiceCard(name: 'Uber', subtitle: 'Global rides', icon: Icons.local_taxi, iconColor: Colors.black),
+        _buildRideServiceCard(name: 'Ola', subtitle: 'City rides', icon: Icons.directions_car, iconColor: Colors.green),
+        _buildRideServiceCard(name: 'Rapido', subtitle: 'Bike taxi', icon: Icons.motorcycle, iconColor: Colors.yellow[800]!),
+        _buildRideServiceCard(name: 'inDrive', subtitle: 'Bid your fare', icon: Icons.handshake_outlined, iconColor: Colors.blue),
       ],
     );
   }
 
-  Widget _buildRideServiceCard({required String name, required String subtitle, String? svgAsset}) {
+  Widget _buildRideServiceCard({required String name, required String subtitle, required IconData icon, required Color iconColor}) {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      elevation: 1,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Row(
           children: [
-            if(svgAsset != null)
-              SvgPicture.asset(svgAsset, height: 30, width: 30),
+            CircleAvatar(
+              radius: 20,
+              backgroundColor: iconColor.withOpacity(0.1),
+              child: Icon(icon, size: 20, color: iconColor),
+            ),
             const SizedBox(width: 8),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
-                  Text(subtitle, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                  Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                  Text(subtitle, style: const TextStyle(fontSize: 10, color: Colors.grey), overflow: TextOverflow.ellipsis),
                 ],
               ),
             )
@@ -116,22 +125,26 @@ class BookACarScreen extends ConsumerWidget {
   Widget _buildCarPlatformList() {
     return Column(
       children: [
-        _buildCarPlatformCard(name: 'Spinny', subtitle: 'Pre-owned cars with warranty'),
-        _buildCarPlatformCard(name: 'Cars24', subtitle: 'Buy or sell used cars'),
-        _buildCarPlatformCard(name: 'CarDekho', subtitle: 'New & used car research'),
-        _buildCarPlatformCard(name: 'CarWale', subtitle: 'Compare & buy cars'),
+        _buildCarPlatformCard(name: 'Spinny', subtitle: 'Pre-owned cars', icon: Icons.verified_outlined, color: Colors.indigo),
+        _buildCarPlatformCard(name: 'Cars24', subtitle: 'Buy & Sell', icon: Icons.swap_horiz_outlined, color: Colors.orange),
+        _buildCarPlatformCard(name: 'CarDekho', subtitle: 'Expert research', icon: Icons.manage_search_outlined, color: Colors.blue),
+        _buildCarPlatformCard(name: 'CarWale', subtitle: 'Compare cars', icon: Icons.compare_arrows_outlined, color: Colors.red),
       ],
     );
   }
 
-  Widget _buildCarPlatformCard({required String name, required String subtitle}) {
+  Widget _buildCarPlatformCard({required String name, required String subtitle, required IconData icon, required Color color}) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: ListTile(
-        title: Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(subtitle),
-        trailing: const Icon(Icons.open_in_new, size: 16),
+        leading: CircleAvatar(
+          backgroundColor: color.withOpacity(0.1),
+          child: Icon(icon, color: color, size: 20),
+        ),
+        title: Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+        subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
+        trailing: const Icon(Icons.arrow_forward_ios, size: 14),
       ),
     );
   }
@@ -144,17 +157,42 @@ class BookACarScreen extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Self-Drive', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            const Text('Rent cars without driver', style: TextStyle(color: Colors.grey)),
-            const SizedBox(height: 8),
             Row(
-              children: const [                Chip(label: Text('Zoomcar')),                SizedBox(width: 8),
-                Chip(label: Text('Revv')),
+              children: [
+                CircleAvatar(backgroundColor: Colors.blue[50], child: Icon(Icons.time_to_leave_outlined, color: Colors.blue[800])),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: const [
+                    Text('Self-Drive', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                    Text('Rent cars without driver', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                _buildRentalChip('Zoomcar', Colors.green),
+                const SizedBox(width: 8),
+                _buildRentalChip('Revv', Colors.deepPurple),
               ],
             )
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildRentalChip(String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Text(label, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 12)),
     );
   }
 }
