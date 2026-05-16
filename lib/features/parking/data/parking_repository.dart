@@ -4,7 +4,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:yellowspotuser/core/providers/app_providers.dart';
 
 class ParkingRepository {
-  final Dio _dio;
+  // ignore: unused_field
+  final Dio _dio; // Kept for the eventual swap to real API calls.
 
   ParkingRepository(this._dio);
 

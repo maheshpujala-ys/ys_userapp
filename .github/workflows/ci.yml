@@ -48,7 +48,10 @@ jobs:
         run: dart format --output=none .
 
       - name: Static analysis
-        run: flutter analyze
+        # `--no-fatal-infos` keeps errors + warnings blocking (which we want
+        # to enforce) while tolerating info-level deprecation hints in legacy
+        # screens. Drop the flag once `dart fix --apply` has cleaned those up.
+        run: flutter analyze --no-fatal-infos
 
       - name: Run tests
         run: flutter test --reporter expanded

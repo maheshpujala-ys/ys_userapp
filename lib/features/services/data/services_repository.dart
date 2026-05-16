@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yellowspotuser/core/providers/app_providers.dart';
 
 class ServicesRepository {
-  final Dio _dio;
+  // ignore: unused_field
+  final Dio _dio; // Kept for the eventual swap to real API calls.
 
   ServicesRepository(this._dio);
 
