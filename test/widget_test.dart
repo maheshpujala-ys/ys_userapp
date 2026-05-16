@@ -1,30 +1,53 @@
-// This is a basic Flutter widget test.
+// Lightweight smoke tests for pure-Dart helpers.
 //
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
+// The default Flutter counter widget test was removed — it called
+// `pumpWidget(MyApp())` which triggers secure-storage reads and Dio setup
+// that hang in headless CI.
+//
+// Replace / extend this file with proper widget tests once we have a
+// `ProviderScope` test harness with mocked secure storage and dio.
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:yellowspotuser/main.dart';
+import 'package:yellowspotuser/features/auth/domain/app_user.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  group('UserRoleX.fromApi', () {
+    test('maps known roles case-insensitively', () {
+      expect(UserRoleX.fromApi('admin'), UserRole.admin);
+      expect(UserRoleX.fromApi('ADMIN'), UserRole.admin);
+      expect(UserRoleX.fromApi('security'), UserRole.security);
+      expect(UserRoleX.fromApi('manager'), UserRole.manager);
+    });
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    test('recognises both superadmin variants', () {
+      expect(UserRoleX.fromApi('superadmin'), UserRole.superAdmin);
+      expect(UserRoleX.fromApi('super_admin'), UserRole.superAdmin);
+    });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    test('falls back to user for null / empty / unknown', () {
+      expect(UserRoleX.fromApi(null), UserRole.user);
+      expect(UserRoleX.fromApi(''), UserRole.user);
+      expect(UserRoleX.fromApi('alien-role'), UserRole.user);
+    });
+  });
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+  group('AppUser.copyWith', () {
+    test('returns a new instance with only overridden fields changed', () {
+      const base = AppUser(
+        id: '1',
+        username: 'alice',
+        email: 'alice@example.com',
+        name: 'Alice',
+        roles: [UserRole.admin],
+        token: 'tok-123',
+      );
+      final updated = base.copyWith(name: 'Alice 2');
+
+      expect(updated.name, 'Alice 2');
+      expect(updated.username, base.username);
+      expect(updated.email, base.email);
+      expect(updated.roles, base.roles);
+      expect(updated.token, base.token);
+    });
   });
 }

@@ -15,17 +15,11 @@ jobs:
   analyze-and-test:
     name: Analyze & test
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -58,19 +52,25 @@ jobs:
 
   build-android-debug:
     name: Build Android (debug smoke)
+    # Only run the slow Android build on pushes to main / develop, and skip
+    # on PRs where fast analyze+test feedback is what matters. Saves ~5–10
+    # min of runner time per PR.
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     needs: analyze-and-test
-    timeout-minutes: 30
+    timeout-minutes: 25
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Java with built-in Gradle caching — huge speedup on subsequent runs.
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
+          cache: gradle
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -79,12 +79,30 @@ jobs:
           channel: stable
           cache: true
 
+      # Auto-accept Android SDK licenses. Without this, Gradle may hang
+      # silently on first-time AGP setup waiting for `y` on each license.
+      - name: Accept Android SDK licenses
+        run: yes | sdkmanager --licenses > /dev/null || true
+
+      # Cache Pub packages so `flutter pub get` is near-instant on re-runs.
+      - name: Cache Pub
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.pub-cache
+            .dart_tool
+          key: pub-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
+          restore-keys: pub-${{ runner.os }}-
+
       - name: Install dependencies
         run: flutter pub get
 
       - name: Build debug APK
         env:
           GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+          # Force non-interactive Gradle so it can't block on prompts.
+          # `--no-daemon` avoids leftover daemons holding state across steps.
+          GRADLE_OPTS: '-Dorg.gradle.daemon=false -Dorg.gradle.parallel=true -Dorg.gradle.jvmargs=-Xmx3g'
         run: flutter build apk --debug --dart-define=GOOGLE_MAPS_API_KEY=$GOOGLE_MAPS_API_KEY
 
       - name: Upload debug APK
