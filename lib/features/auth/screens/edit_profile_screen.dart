@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yellowspotuser/features/auth/application/auth_controller.dart';
 
 class EditProfileScreen extends ConsumerStatefulWidget {
-  const EditProfileScreen({Key? key}) : super(key: key);
+  const EditProfileScreen({super.key});
 
   @override
   ConsumerState<EditProfileScreen> createState() => _EditProfileScreenState();
@@ -58,15 +58,22 @@ class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
               ElevatedButton(
                 onPressed: authState.isLoading
                     ? null
-                    : () {
-                        if (_formKey.currentState!.validate()) {
-                          // In a real app, you would call the updateUser method
-                          // on your AuthController.
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Profile updated successfully!')),
-                          );
-                          Navigator.of(context).pop();
-                        }
+                    : () async {
+                        if (!_formKey.currentState!.validate()) return;
+                        final messenger = ScaffoldMessenger.of(context);
+                        final navigator = Navigator.of(context);
+                        await ref
+                            .read(AuthController.provider.notifier)
+                            .updateUser(
+                              name: _nameController.text.trim(),
+                              email: _emailController.text.trim(),
+                            );
+                        if (!mounted) return;
+                        messenger.showSnackBar(
+                          const SnackBar(
+                              content: Text('Profile updated successfully!')),
+                        );
+                        navigator.pop();
                       },
                 child: authState.isLoading ? const CircularProgressIndicator() : const Text('Save Changes'),
               ),

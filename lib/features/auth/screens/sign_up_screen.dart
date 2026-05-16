@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:yellowspotuser/features/auth/application/auth_controller.dart';
+import 'package:yellowspotuser/features/auth/application/register_controller.dart';
+import 'package:yellowspotuser/features/auth/domain/app_user.dart';
 
 class SignUpScreen extends ConsumerStatefulWidget {
-  const SignUpScreen({Key? key}) : super(key: key);
+  const SignUpScreen({super.key});
 
   @override
   ConsumerState<SignUpScreen> createState() => _SignUpScreenState();
@@ -11,39 +12,45 @@ class SignUpScreen extends ConsumerStatefulWidget {
 
 class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
+  final _usernameController = TextEditingController();
+  final _fullnameController = TextEditingController();
   final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
+  UserRole _role = UserRole.user;
 
   @override
   void dispose() {
-    _nameController.dispose();
+    _usernameController.dispose();
+    _fullnameController.dispose();
     _emailController.dispose();
-    _passwordController.dispose();
     super.dispose();
   }
 
-  void _signUp() {
-    if (_formKey.currentState!.validate()) {
-      ref.read(AuthController.provider.notifier).signUp(
-            name: _nameController.text,
-            email: _emailController.text,
-            password: _passwordController.text,
-          );
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+    final ok = await ref.read(RegisterController.provider.notifier).submit(
+          username: _usernameController.text.trim(),
+          fullname: _fullnameController.text.trim(),
+          email: _emailController.text.trim(),
+          role: _role.apiValue,
+        );
+    if (!mounted) return;
+    if (ok) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Account created — check email to set password.')),
+      );
+      Navigator.of(context).pop();
+    } else {
+      final err = ref.read(RegisterController.provider).error;
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(err.toString())));
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(AuthController.provider);
-
-    ref.listen<AsyncValue>(AuthController.provider, (previous, next) {
-      next.whenOrNull(
-        error: (error, stack) => ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error.toString())),
-        ),
-      );
-    });
+    final isLoading = ref.watch(
+      RegisterController.provider.select((s) => s.isLoading),
+    );
 
     return Scaffold(
       appBar: AppBar(title: const Text('Create Account')),
@@ -54,21 +61,34 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text(
-                'Join Yellowspot',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
+              const Text('Join Yellowspot',
+                  style:
+                      TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
-              const Text('Create an account to start using smart parking'),
+              const Text('Fill in the details to register a new account'),
               const SizedBox(height: 32),
               TextFormField(
-                controller: _nameController,
+                controller: _usernameController,
                 decoration: const InputDecoration(
-                  labelText: 'Full Name',
+                  labelText: 'Username',
                   prefixIcon: Icon(Icons.person_outline),
                   border: OutlineInputBorder(),
                 ),
-                validator: (value) => value!.isEmpty ? 'Please enter your name' : null,
+                validator: (v) => (v == null || v.trim().isEmpty)
+                    ? 'Please enter a username'
+                    : null,
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _fullnameController,
+                decoration: const InputDecoration(
+                  labelText: 'Full Name',
+                  prefixIcon: Icon(Icons.badge_outlined),
+                  border: OutlineInputBorder(),
+                ),
+                validator: (v) => (v == null || v.trim().isEmpty)
+                    ? 'Please enter your full name'
+                    : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -78,29 +98,42 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   prefixIcon: Icon(Icons.email_outlined),
                   border: OutlineInputBorder(),
                 ),
-                validator: (value) => !value!.contains('@') ? 'Enter a valid email' : null,
+                keyboardType: TextInputType.emailAddress,
+                validator: (v) =>
+                    !(v ?? '').contains('@') ? 'Enter a valid email' : null,
               ),
               const SizedBox(height: 16),
-              TextFormField(
-                controller: _passwordController,
+              DropdownButtonFormField<UserRole>(
+                initialValue: _role,
                 decoration: const InputDecoration(
-                  labelText: 'Password',
-                  prefixIcon: Icon(Icons.lock_outline),
+                  labelText: 'Role',
+                  prefixIcon: Icon(Icons.shield_outlined),
                   border: OutlineInputBorder(),
                 ),
-                obscureText: true,
-                validator: (value) => value!.length < 6 ? 'Password too short' : null,
+                items: const [
+                  DropdownMenuItem(value: UserRole.user, child: Text('User')),
+                  DropdownMenuItem(
+                      value: UserRole.manager, child: Text('Manager')),
+                  DropdownMenuItem(
+                      value: UserRole.admin, child: Text('Admin')),
+                  DropdownMenuItem(
+                      value: UserRole.security, child: Text('Security')),
+                ],
+                onChanged: (v) => setState(() => _role = v ?? UserRole.user),
               ),
               const SizedBox(height: 32),
               ElevatedButton(
-                onPressed: authState.isLoading ? null : _signUp,
+                onPressed: isLoading ? null : _submit,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.yellow[700],
                   minimumSize: const Size.fromHeight(50),
                 ),
-                child: authState.isLoading 
-                  ? const CircularProgressIndicator(color: Colors.black) 
-                  : const Text('Create Account', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+                child: isLoading
+                    ? const CircularProgressIndicator(color: Colors.black)
+                    : const Text('Create Account',
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold)),
               ),
             ],
           ),

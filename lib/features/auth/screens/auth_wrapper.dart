@@ -7,36 +7,53 @@ import 'package:yellowspotuser/features/auth/domain/app_user.dart';
 import 'package:yellowspotuser/features/auth/screens/login_screen.dart';
 import 'package:yellowspotuser/features/core/screens/home_screen.dart';
 
+/// Decision tuple for routing: avoids rebuilds when unrelated user fields change.
+class _AuthRoute {
+  const _AuthRoute(this.isLoading, this.isLoggedIn, this.isAdmin);
+  final bool isLoading;
+  final bool isLoggedIn;
+  final bool isAdmin;
+
+  @override
+  bool operator ==(Object other) =>
+      other is _AuthRoute &&
+      isLoading == other.isLoading &&
+      isLoggedIn == other.isLoggedIn &&
+      isAdmin == other.isAdmin;
+
+  @override
+  int get hashCode => Object.hash(isLoading, isLoggedIn, isAdmin);
+}
+
 class AuthWrapper extends ConsumerWidget {
-  const AuthWrapper({Key? key}) : super(key: key);
+  const AuthWrapper({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final authState = ref.watch(AuthController.provider);
-    final isAdminView = ref.watch(isAdminViewProvider);
+    final route = ref.watch(AuthController.provider.select((s) => _AuthRoute(
+          s.isLoading,
+          s.asData?.value != null,
+          s.asData?.value?.roles.contains(UserRole.admin) ?? false,
+        )));
 
-    return authState.when(
-      data: (user) {
-        if (user == null) {
-          return const LoginScreen();
-        }
-        
-        // If the user has an Admin role
-        if (user.roles.contains(UserRole.admin)) {
-          // If the admin wants to see the admin dashboard
-          if (isAdminView) {
-            return const AdminDashboardScreen();
-          } else {
-            // If the admin explicitly toggled to user view
-            return const HomeScreen();
-          }
-        }
+    if (route.isLoading) return const _AuthSplash();
+    if (!route.isLoggedIn) return const LoginScreen();
 
-        // Regular users always see the HomeScreen
-        return const HomeScreen();
-      },
-      loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
-      error: (error, stackTrace) => const LoginScreen(),
+    if (route.isAdmin) {
+      final isAdminView = ref.watch(isAdminViewProvider);
+      return isAdminView ? const AdminDashboardScreen() : const HomeScreen();
+    }
+    return const HomeScreen();
+  }
+}
+
+class _AuthSplash extends StatelessWidget {
+  const _AuthSplash();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: Center(child: CircularProgressIndicator()),
     );
   }
 }

@@ -15,52 +15,43 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
-  final List<Widget> _screens = [
-    const FindYourSpotScreen(),
-    const ResidentialScreen(),
-    const QuickServicesScreen(),
-    const CarServicesScreen(),
-    const BookACarScreen(),
-    const ProfileScreen(),
+
+  static const List<Widget> _screens = <Widget>[
+    FindYourSpotScreen(),
+    ResidentialScreen(),
+    QuickServicesScreen(),
+    CarServicesScreen(),
+    BookACarScreen(),
+    ProfileScreen(),
+  ];
+
+  static const List<BottomNavigationBarItem> _navItems =
+      <BottomNavigationBarItem>[
+    BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Find Your Spot'),
+    BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Residential'),
+    BottomNavigationBarItem(
+        icon: Icon(Icons.miscellaneous_services), label: 'Quick Services'),
+    BottomNavigationBarItem(
+        icon: Icon(Icons.car_rental), label: 'Car Services'),
+    BottomNavigationBarItem(
+        icon: Icon(Icons.book_online), label: 'Book a Car'),
+    BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
   ];
 
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    if (index == _selectedIndex) return;
+    setState(() => _selectedIndex = index);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _screens[_selectedIndex],
+      // IndexedStack keeps each tab's state alive across switches and only paints
+      // the visible child — the GoogleMap doesn't get re-created on every tab tap.
+      body: IndexedStack(index: _selectedIndex, children: _screens),
       bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: 'Find Your Spot',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Residential',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.miscellaneous_services),
-            label: 'Quick Services',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.car_rental),
-            label: 'Car Services',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.book_online),
-            label: 'Book a Car',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
+        type: BottomNavigationBarType.fixed,
+        items: _navItems,
         currentIndex: _selectedIndex,
         selectedItemColor: Colors.amber[800],
         unselectedItemColor: Colors.grey,

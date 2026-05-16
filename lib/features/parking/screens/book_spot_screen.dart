@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class BookSpotScreen extends StatelessWidget {
-  const BookSpotScreen({Key? key}) : super(key: key);
+  const BookSpotScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

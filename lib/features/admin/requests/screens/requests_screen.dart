@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yellowspotuser/features/admin/data/admin_providers.dart';
 
 class RequestsScreen extends ConsumerWidget {
-  const RequestsScreen({Key? key}) : super(key: key);
+  const RequestsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -34,12 +34,12 @@ class RequestListItem extends StatelessWidget {
   final String timestamp;
 
   const RequestListItem({
-    Key? key,
+    super.key,
     required this.userName,
     required this.unit,
     required this.requestType,
     required this.timestamp,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

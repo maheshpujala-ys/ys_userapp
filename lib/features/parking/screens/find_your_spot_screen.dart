@@ -1,41 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:yellowspotuser/core/providers/app_providers.dart';
 import 'package:yellowspotuser/features/map/application/map_controller.dart';
 import 'package:yellowspotuser/features/parking/application/parking_controller.dart';
 import 'package:yellowspotuser/features/parking/screens/book_spot_screen.dart';
+
+const String _kMapStyle = '''
+[
+  {
+    "featureType": "poi",
+    "stylers": [
+      { "visibility": "off" }
+    ]
+  }
+]
+''';
+
+const CameraPosition _kInitialCamera = CameraPosition(
+  target: LatLng(17.3850, 78.4867), // Hyderabad
+  zoom: 12,
+);
 
 class FindYourSpotScreen extends ConsumerWidget {
   const FindYourSpotScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final mapState = ref.watch(mapControllerProvider);
-
     return Scaffold(
       body: Stack(
         children: [
-          GoogleMap(
-            initialCameraPosition: const CameraPosition(
-              target: LatLng(17.3850, 78.4867), // Hyderabad
-              zoom: 12,
-            ),
-            markers: mapState.asData?.value ?? {},
-            onMapCreated: (GoogleMapController controller) {
-              controller.setMapStyle('''
-                [
-                  {
-                    "featureType": "poi",
-                    "stylers": [
-                      { "visibility": "off" }
-                    ]
-                  }
-                ]
-              ''');
-            },
-          ),
-          
+          // Markers are isolated in their own consumer to keep map rebuilds out
+          // of the rest of this tree.
+          const _MapLayer(),
           Positioned(
             top: MediaQuery.of(context).padding.top + 16,
             right: 16,
@@ -43,18 +39,18 @@ class FindYourSpotScreen extends ConsumerWidget {
               backgroundColor: Colors.white,
               radius: 22,
               child: IconButton(
-                icon: const Icon(Icons.notifications_none_outlined, color: Colors.black),
+                icon: const Icon(Icons.notifications_none_outlined,
+                    color: Colors.black),
                 onPressed: () {},
               ),
             ),
           ),
-
           DraggableScrollableSheet(
             initialChildSize: 0.28,
             minChildSize: 0.12,
             maxChildSize: 0.38,
             snap: true,
-            builder: (BuildContext context, ScrollController scrollController) {
+            builder: (context, scrollController) {
               return Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -67,12 +63,12 @@ class FindYourSpotScreen extends ConsumerWidget {
                       color: Colors.black.withOpacity(0.05),
                       blurRadius: 10,
                       spreadRadius: 1,
-                    )
+                    ),
                   ],
                 ),
                 child: SingleChildScrollView(
                   controller: scrollController,
-                  child: _buildDraggableSheetContent(context, ref),
+                  child: const _NearbyParkingList(),
                 ),
               );
             },
@@ -81,9 +77,31 @@ class FindYourSpotScreen extends ConsumerWidget {
       ),
     );
   }
+}
 
-  Widget _buildDraggableSheetContent(BuildContext context, WidgetRef ref) {
+class _MapLayer extends ConsumerWidget {
+  const _MapLayer();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final markers = ref.watch(
+      mapControllerProvider.select((s) => s.asData?.value ?? const <Marker>{}),
+    );
+    return GoogleMap(
+      initialCameraPosition: _kInitialCamera,
+      markers: markers,
+      onMapCreated: (controller) => controller.setMapStyle(_kMapStyle),
+    );
+  }
+}
+
+class _NearbyParkingList extends ConsumerWidget {
+  const _NearbyParkingList();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
     final parkingState = ref.watch(ParkingController.filteredProvider);
+    final cardWidth = MediaQuery.of(context).size.width * 0.85;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -92,7 +110,7 @@ class FindYourSpotScreen extends ConsumerWidget {
           child: Container(
             width: 32,
             height: 4,
-            margin: const EdgeInsets.only(top: 8, bottom: 4), // Reduced from 12
+            margin: const EdgeInsets.only(top: 8, bottom: 4),
             decoration: BoxDecoration(
               color: Colors.grey[300],
               borderRadius: BorderRadius.circular(2),
@@ -100,14 +118,14 @@ class FindYourSpotScreen extends ConsumerWidget {
           ),
         ),
         const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 2.0), // Reduced from 4
+          padding: EdgeInsets.symmetric(horizontal: 20.0, vertical: 2.0),
           child: Text(
             'Nearby Parking',
             style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
           ),
         ),
         SizedBox(
-          height: 185, // Reduced from 210
+          height: 185,
           child: parkingState.when(
             data: (parkingList) {
               if (parkingList.isEmpty) {
@@ -117,23 +135,22 @@ class FindYourSpotScreen extends ConsumerWidget {
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 itemCount: parkingList.length,
+                itemExtent: cardWidth,
                 itemBuilder: (context, index) {
                   final parking = parkingList[index];
-                  return SizedBox(
-                    width: MediaQuery.of(context).size.width * 0.85,
-                    child: ParkingListItem(
-                      mallName: parking['mallName'],
-                      distance: parking['distance'],
-                      availability: parking['availability'],
-                      address: parking['address'],
-                      price: parking['price'],
-                    ),
+                  return ParkingListItem(
+                    key: ValueKey(parking['mallName']),
+                    mallName: parking['mallName'],
+                    distance: parking['distance'],
+                    availability: parking['availability'],
+                    address: parking['address'],
+                    price: parking['price'],
                   );
                 },
               );
             },
             loading: () => const Center(child: CircularProgressIndicator()),
-            error: (error, stackTrace) => Center(child: Text(error.toString())),
+            error: (error, _) => Center(child: Text(error.toString())),
           ),
         ),
       ],
@@ -167,7 +184,7 @@ class ParkingListItem extends StatelessWidget {
         side: BorderSide(color: Colors.grey.shade100),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(10.0), // Reduced from 12
+        padding: const EdgeInsets.all(10.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -178,60 +195,76 @@ class ParkingListItem extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Expanded(child: Text(mallName, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold), overflow: TextOverflow.ellipsis)),
+                    Expanded(
+                        child: Text(mallName,
+                            style: const TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.bold),
+                            overflow: TextOverflow.ellipsis)),
                     const SizedBox(width: 8),
                     Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                            color: Colors.green.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8)),
-                        child: Text(availability, style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 10))),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                          color: Colors.green.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8)),
+                      child: Text(availability,
+                          style: const TextStyle(
+                              color: Colors.green,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 10)),
+                    ),
                   ],
                 ),
-                const SizedBox(height: 2), // Reduced from 4
+                const SizedBox(height: 2),
                 Row(
                   children: [
-                    Text(distance, style: TextStyle(fontSize: 10, color: Colors.grey[600])),
+                    Text(distance,
+                        style:
+                            TextStyle(fontSize: 10, color: Colors.grey[600])),
                     const SizedBox(width: 6),
                     Icon(Icons.circle, size: 3, color: Colors.grey[400]),
                     const SizedBox(width: 6),
-                    const Text('Open Now', style: TextStyle(fontSize: 10, color: Colors.blue)),
+                    const Text('Open Now',
+                        style: TextStyle(fontSize: 10, color: Colors.blue)),
                   ],
                 ),
               ],
             ),
-            const SizedBox(height: 4), // Reduced from 8
-            Wrap(
+            const SizedBox(height: 4),
+            const Wrap(
               spacing: 6.0,
               runSpacing: 4.0,
-              children: const [
+              children: [
                 _CompactChip(label: 'EV', icon: Icons.ev_station),
                 _CompactChip(label: 'CCTV'),
                 _CompactChip(label: 'Valet'),
               ],
             ),
-            const SizedBox(height: 4), // Reduced from 8
+            const SizedBox(height: 4),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(price, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                Text(price,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.bold, fontSize: 14)),
                 ElevatedButton(
-                  onPressed: () {
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      builder: (context) => const BookSpotScreen(),
-                    );
-                  },
+                  onPressed: () => showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    builder: (_) => const BookSpotScreen(),
+                  ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.yellow[700],
                     foregroundColor: Colors.black,
                     elevation: 0,
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    minimumSize: const Size(0, 32), // Reduced from 36
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    minimumSize: const Size(0, 32),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
                   ),
-                  child: const Text('Book Now', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+                  child: const Text('Book Now',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 11)),
                 ),
               ],
             ),
@@ -251,7 +284,7 @@ class _CompactChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2), // Reduced vertical from 3
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
         color: Colors.grey[50],
         borderRadius: BorderRadius.circular(6),

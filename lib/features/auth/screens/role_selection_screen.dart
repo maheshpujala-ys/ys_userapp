@@ -7,7 +7,7 @@ import 'package:yellowspotuser/features/core/screens/home_screen.dart';
 class RoleSelectionScreen extends ConsumerWidget {
   final AppUser user;
 
-  const RoleSelectionScreen({Key? key, required this.user}) : super(key: key);
+  const RoleSelectionScreen({super.key, required this.user});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yellowspotuser/features/admin/data/admin_providers.dart';
 
 class ActivityScreen extends ConsumerWidget {
-  const ActivityScreen({Key? key}) : super(key: key);
+  const ActivityScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -32,11 +32,11 @@ class ActivityListItem extends StatelessWidget {
   final String timestamp;
 
   const ActivityListItem({
-    Key? key,
+    super.key,
     required this.title,
     required this.subtitle,
     required this.timestamp,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

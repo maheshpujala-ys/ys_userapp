@@ -1,31 +1,27 @@
-import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class MapController extends StateNotifier<AsyncValue<Set<Marker>>> {
-  GoogleMapController? _mapController;
+  MapController() : super(const AsyncValue.data(<Marker>{}));
 
-  MapController() : super(const AsyncValue.data({}));
-
-  void setMapController(GoogleMapController controller) {
-    _mapController = controller;
+  void setMarkers(Set<Marker> markers) {
+    if (!mounted) return;
+    state = AsyncValue.data(markers);
   }
 
   void addMarker(Marker marker) {
     state = state.whenData((markers) => {...markers, marker});
   }
 
-  void animateToLocation(LatLng location) {
-    _mapController?.animateCamera(CameraUpdate.newLatLngZoom(location, 15));
-  }
-
-  @override
-  void dispose() {
-    _mapController?.dispose();
-    super.dispose();
+  void clear() {
+    if (!mounted) return;
+    state = const AsyncValue.data(<Marker>{});
   }
 }
 
-final mapControllerProvider = StateNotifierProvider<MapController, AsyncValue<Set<Marker>>>((ref) {
-  return MapController();
-});
+/// autoDispose so markers reset when the parking screen is unmounted —
+/// prevents marker accumulation across navigations.
+final mapControllerProvider =
+    StateNotifierProvider.autoDispose<MapController, AsyncValue<Set<Marker>>>(
+  (ref) => MapController(),
+);

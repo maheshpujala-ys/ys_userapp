@@ -5,27 +5,23 @@ import 'package:yellowspotuser/features/auth/application/auth_controller.dart';
 import 'package:yellowspotuser/features/auth/domain/app_user.dart';
 
 class RoleSwitcher extends ConsumerWidget {
-  const RoleSwitcher({Key? key}) : super(key: key);
+  const RoleSwitcher({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(AuthController.provider).asData?.value;
+    final roles = ref.watch(AuthController.provider
+        .select((s) => s.asData?.value?.roles ?? const <UserRole>[]));
+    if (roles.length <= 1) return const SizedBox.shrink();
+
     final activeRole = ref.watch(activeRoleProvider);
 
-    if (user == null || user.roles.length <= 1) {
-      return const SizedBox.shrink(); 
-    }
-
     return PopupMenuButton<UserRole>(
-      onSelected: (role) {
-        ref.read(activeRoleProvider.notifier).state = role;
-      },
-      itemBuilder: (context) => user.roles.map((role) {
-        return PopupMenuItem(
-          value: role,
-          child: Text('Switch to ${role.name}'),
-        );
-      }).toList(),
+      onSelected: (role) =>
+          ref.read(activeRoleProvider.notifier).state = role,
+      itemBuilder: (context) => [
+        for (final role in roles)
+          PopupMenuItem(value: role, child: Text('Switch to ${role.name}')),
+      ],
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
         child: Chip(

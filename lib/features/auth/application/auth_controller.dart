@@ -1,85 +1,118 @@
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:yellowspotuser/core/providers/app_providers.dart';
-import 'package:yellowspotuser/features/auth/data/auth_repository.dart';
+import 'package:yellowspotuser/core/services/network/dio_interceptor.dart';
 import 'package:yellowspotuser/features/auth/domain/app_user.dart';
+import 'package:yellowspotuser/features/auth/domain/entities/auth_credentials.dart';
+import 'package:yellowspotuser/features/auth/domain/repositories/auth_repository.dart';
 
+const String _kSessionKey = 'auth_session';
+
+/// ViewModel for the authenticated session.
+///
+/// Owns the persisted session (token + cached user snapshot) and the
+/// "currently signed-in" stream consumed by AuthWrapper.
 class AuthController extends StateNotifier<AsyncValue<AppUser?>> {
-  final AuthRepository _authRepository;
-  final FlutterSecureStorage _secureStorage;
-  final StateNotifierProviderRef _ref;
-
-  AuthController(this._authRepository, this._secureStorage, this._ref) : super(const AsyncValue.loading()) {
-    tryAutoLogin();
+  AuthController(
+    this._repository,
+    this._secureStorage,
+    this._interceptor,
+    this._ref,
+  ) : super(const AsyncValue.loading()) {
+    _restoreSession();
   }
 
-  static final provider = StateNotifierProvider<AuthController, AsyncValue<AppUser?>>((ref) {
-    return AuthController(ref.watch(AuthRepository.provider), ref.watch(secureStorageProvider), ref);
+  final AuthRepository _repository;
+  final FlutterSecureStorage _secureStorage;
+  final DioInterceptor _interceptor;
+  final Ref _ref;
+
+  static final provider =
+      StateNotifierProvider<AuthController, AsyncValue<AppUser?>>((ref) {
+    return AuthController(
+      ref.watch(AuthRepository.provider),
+      ref.watch(secureStorageProvider),
+      ref.watch(dioInterceptorProvider),
+      ref,
+    );
   });
 
-  Future<void> tryAutoLogin() async {
-    final token = await _secureStorage.read(key: 'auth_token');
-    if (token != null) {
-      if (token == 'multi-role-token') {
-        final user = AppUser(id: 'admin1', email: 'admin@test.com', name: 'Admin User', roles: [UserRole.admin, UserRole.user], token: token);
-        _ref.read(isAdminViewProvider.notifier).state = true; // Set admin view by default
-        state = AsyncValue.data(user);
-      } else if (token == 'user-token' || token == 'new-user-token') {
-        state = AsyncValue.data(AppUser(id: 'user1', email: 'user@test.com', name: 'Test User', roles: [UserRole.user], token: token));
-      } else {
-        state = const AsyncValue.data(null);
+  Future<void> _restoreSession() async {
+    final raw = await _secureStorage.read(key: _kSessionKey);
+    if (raw == null || raw.isEmpty) {
+      if (mounted) state = const AsyncValue.data(null);
+      return;
+    }
+    try {
+      final json = jsonDecode(raw) as Map<String, dynamic>;
+      final user = AppUser(
+        id: json['id'] as String?,
+        username: json['username'] as String,
+        email: json['email'] as String?,
+        name: json['name'] as String? ?? '',
+        roles: (json['roles'] as List<dynamic>)
+            .map((e) => UserRoleX.fromApi(e as String))
+            .toList(growable: false),
+        solutionType: json['solutionType'] as String?,
+        token: json['token'] as String,
+      );
+      _interceptor.setToken(user.token);
+      if (user.roles.contains(UserRole.admin)) {
+        _ref.read(isAdminViewProvider.notifier).state = true;
       }
-    } else {
-      state = const AsyncValue.data(null);
+      if (mounted) state = AsyncValue.data(user);
+    } catch (_) {
+      await _secureStorage.delete(key: _kSessionKey);
+      if (mounted) state = const AsyncValue.data(null);
     }
   }
 
-  Future<void> login(String email, String password) async {
+  Future<void> login({
+    required String username,
+    required String password,
+  }) async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
-      final user = await _authRepository.login(email, password);
-      await _secureStorage.write(key: 'auth_token', value: user.token);
-      
+      final user = await _repository.login(AuthCredentials(
+        username: username,
+        password: password,
+      ));
+      await _persistSession(user);
+      _interceptor.setToken(user.token);
       if (user.roles.contains(UserRole.admin)) {
-        _ref.read(isAdminViewProvider.notifier).state = true; // Set admin view on login
+        _ref.read(isAdminViewProvider.notifier).state = true;
       }
-      
       return user;
     });
   }
 
-  Future<void> signUp({required String name, required String email, required String password}) async {
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() async {
-      final user = await _authRepository.signUp(name: name, email: email, password: password);
-      await _secureStorage.write(key: 'auth_token', value: user.token);
-      return user;
-    });
-  }
-
-  Future<void> forgotPassword(String email) async {
-    state = const AsyncValue.loading();
-    final result = await AsyncValue.guard(() => _authRepository.forgotPassword(email));
-    state = result.when(
-      data: (_) => const AsyncValue.data(null),
-      error: (e, st) => AsyncValue.error(e, st),
-      loading: () => const AsyncValue.loading(),
-    );
-  }
-
-  Future<void> updateUser(String name, String email) async {
-    state = const AsyncValue.loading();
-    state = await AsyncValue.guard(() async {
-      final user = state.value!;
-      final updatedUser = await _authRepository.updateUser(user.id, name, email);
-      return updatedUser;
-    });
+  Future<void> updateUser({String? name, String? email}) async {
+    final current = state.value;
+    if (current == null) return;
+    final updated = current.copyWith(name: name, email: email);
+    await _persistSession(updated);
+    if (mounted) state = AsyncValue.data(updated);
   }
 
   Future<void> logout() async {
-    state = const AsyncValue.loading();
-    await _secureStorage.delete(key: 'auth_token');
-    _ref.read(isAdminViewProvider.notifier).state = false; // Reset view on logout
-    state = const AsyncValue.data(null);
+    await _secureStorage.delete(key: _kSessionKey);
+    _interceptor.setToken(null);
+    _ref.read(isAdminViewProvider.notifier).state = false;
+    if (mounted) state = const AsyncValue.data(null);
+  }
+
+  Future<void> _persistSession(AppUser user) async {
+    final json = jsonEncode({
+      'id': user.id,
+      'username': user.username,
+      'email': user.email,
+      'name': user.name,
+      'roles': user.roles.map((r) => r.apiValue).toList(),
+      'solutionType': user.solutionType,
+      'token': user.token,
+    });
+    await _secureStorage.write(key: _kSessionKey, value: json);
   }
 }

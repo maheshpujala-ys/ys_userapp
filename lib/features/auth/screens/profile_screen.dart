@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yellowspotuser/features/auth/application/auth_controller.dart';
 import 'package:yellowspotuser/features/auth/screens/edit_profile_screen.dart';
-import 'package:yellowspotuser/features/auth/widgets/role_switcher.dart';
 
 class ProfileScreen extends ConsumerWidget {
-  const ProfileScreen({Key? key}) : super(key: key);
+  const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

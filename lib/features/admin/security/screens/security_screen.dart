@@ -1,18 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:yellowspotuser/features/admin/dashboard/data/admin_repository.dart';
+import 'package:yellowspotuser/features/admin/data/admin_providers.dart';
 
 class SecurityScreen extends ConsumerWidget {
-  const SecurityScreen({Key? key}) : super(key: key);
-
-  static final dataProvider = FutureProvider<Map<String, dynamic>>((ref) async {
-    final adminRepository = ref.watch(AdminRepository.provider);
-    return adminRepository.getSecurityData();
-  });
+  const SecurityScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final securityState = ref.watch(dataProvider);
+    final securityState = ref.watch(securityDataProvider);
     return securityState.when(
       data: (data) => SingleChildScrollView(
         child: Padding(
@@ -107,11 +102,11 @@ class CameraListItem extends StatelessWidget {
   final bool isActive;
 
   const CameraListItem({
-    Key? key,
+    super.key,
     required this.zone,
     required this.location,
     required this.isActive,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -3,18 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yellowspotuser/core/services/notifications/notification_service.dart';
 import 'package:yellowspotuser/features/auth/screens/auth_wrapper.dart';
 
-void main() async {
-  // Ensure native bindings are ready.
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Notification Service
-  await NotificationService.init();
+  // Initialize notifications AFTER the first frame so we don't delay startup.
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    NotificationService.init();
+  });
 
-  runApp(
-    const ProviderScope(
-      child: MyApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -28,9 +25,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
         colorSchemeSeed: Colors.yellow[700],
-        scaffoldBackgroundColor: const Color(0xFFF8F9FA), // Cleaner off-white
-        
-        // Professional, centered AppBars
+        scaffoldBackgroundColor: const Color(0xFFF8F9FA),
         appBarTheme: const AppBarTheme(
           centerTitle: true,
           elevation: 0,
@@ -42,8 +37,6 @@ class MyApp extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
-        
-        // Consistent, clean card styling
         cardTheme: CardThemeData(
           elevation: 0,
           color: Colors.white,
@@ -52,8 +45,6 @@ class MyApp extends StatelessWidget {
             side: BorderSide(color: Colors.grey.shade200),
           ),
         ),
-        
-        // Modern, rounded text fields
         inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: Colors.white,

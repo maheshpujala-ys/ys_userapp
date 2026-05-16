@@ -1,33 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yellowspotuser/core/providers/app_providers.dart';
+import 'package:yellowspotuser/features/admin/accounts/screens/create_account_screen.dart';
 import 'package:yellowspotuser/features/admin/activity/screens/activity_screen.dart';
-import 'package:yellowspotuser/features/admin/dashboard/application/admin_controller.dart';
+import 'package:yellowspotuser/features/admin/data/admin_providers.dart';
 import 'package:yellowspotuser/features/admin/entry_exit/screens/entry_exit_screen.dart';
 import 'package:yellowspotuser/features/admin/requests/screens/requests_screen.dart';
-import 'package:yellowspotuser/features/admin/residents/screens/add_resident_screen.dart';
 import 'package:yellowspotuser/features/admin/residents/screens/create_visitor_pass_screen.dart';
+import 'package:yellowspotuser/features/admin/residents/screens/residents_list_screen.dart';
 import 'package:yellowspotuser/features/admin/security/screens/security_screen.dart';
-import 'package:yellowspotuser/features/admin/smart_cards/screens/add_smart_card_screen.dart';
-import 'package:yellowspotuser/features/admin/vehicles/screens/add_vehicle_screen.dart';
+import 'package:yellowspotuser/features/admin/smart_cards/screens/smart_cards_list_screen.dart';
+import 'package:yellowspotuser/features/admin/vehicles/screens/vehicles_list_screen.dart';
 import 'package:yellowspotuser/features/auth/application/auth_controller.dart';
-import 'package:yellowspotuser/features/core/screens/home_screen.dart';
 
 class AdminDashboardScreen extends ConsumerStatefulWidget {
-  const AdminDashboardScreen({Key? key}) : super(key: key);
+  const AdminDashboardScreen({super.key});
 
   @override
-  ConsumerState<AdminDashboardScreen> createState() => _AdminDashboardScreenState();
+  ConsumerState<AdminDashboardScreen> createState() =>
+      _AdminDashboardScreenState();
 }
 
-class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 4, vsync: this);
-  }
+class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController =
+      TabController(length: 4, vsync: this);
 
   @override
   void dispose() {
@@ -37,30 +34,28 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
 
   @override
   Widget build(BuildContext context) {
-    final adminState = ref.watch(AdminController.provider);
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: NestedScrollView(
-          headerSliverBuilder: (context, innerBoxIsScrolled) => [
+          headerSliverBuilder: (context, _) => [
             SliverToBoxAdapter(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildTopBar(context),
+                    const _TopBar(),
                     const SizedBox(height: 16),
-                    adminState.when(
-                      data: (data) => _buildStatsGrid(data),
-                      loading: () => const Center(child: CircularProgressIndicator()),
-                      error: (error, stackTrace) => Center(child: Text(error.toString())),
-                    ),
+                    // Isolated consumer — only this subtree rebuilds on websocket ticks.
+                    const _StatsGrid(),
                     const SizedBox(height: 24),
-                    const Text('Admin Actions', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    const Text('Admin Actions',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 12),
-                    _buildActionButtons(context),
+                    const _ActionButtons(),
                     const SizedBox(height: 16),
                   ],
                 ),
@@ -98,15 +93,18 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
       ),
     );
   }
+}
 
-  Widget _buildTopBar(BuildContext context) {
+class _TopBar extends ConsumerWidget {
+  const _TopBar();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Text(
-          'Residential', 
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-        ),
+        const Text('Residential',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
         Row(
           children: [
             Container(
@@ -118,45 +116,109 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
                 style: TextButton.styleFrom(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                 ),
-                icon: const Icon(Icons.near_me_outlined, color: Colors.black, size: 18),
-                label: const Text('Back to User', style: TextStyle(color: Colors.black, fontSize: 13, fontWeight: FontWeight.bold)),
-                onPressed: () {
-                  ref.read(isAdminViewProvider.notifier).state = false;
-                },
+                icon: const Icon(Icons.near_me_outlined,
+                    color: Colors.black, size: 18),
+                label: const Text('Back to User',
+                    style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold)),
+                onPressed: () =>
+                    ref.read(isAdminViewProvider.notifier).state = false,
               ),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 4),
+            IconButton(
+              tooltip: 'Refresh stats',
+              icon: const Icon(Icons.refresh),
+              onPressed: () =>
+                  ref.read(adminControllerProvider.notifier).refresh(),
+            ),
             IconButton(
               icon: const Icon(Icons.logout, color: Colors.red),
-              onPressed: () {
-                ref.read(AuthController.provider.notifier).logout();
-              },
+              onPressed: () =>
+                  ref.read(AuthController.provider.notifier).logout(),
             ),
           ],
-        )
+        ),
       ],
     );
   }
+}
 
-  Widget _buildStatsGrid(Map<String, dynamic> data) {
-    return GridView.count(
-      shrinkWrap: true,
-      crossAxisCount: 2,
-      childAspectRatio: 2.2,
-      crossAxisSpacing: 12,
-      mainAxisSpacing: 12,
-      physics: const NeverScrollableScrollPhysics(),
+class _StatsGrid extends ConsumerWidget {
+  const _StatsGrid();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final adminState = ref.watch(adminControllerProvider);
+    return adminState.when(
+      data: _buildGrid,
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, _) => Center(child: Text(error.toString())),
+    );
+  }
+
+  Widget _buildGrid(Map<String, dynamic> data) {
+    return Column(
       children: [
-        _buildStatCard('Residents', data['residents'].toString(), Icons.people_outline),
-        _buildStatCard('Vehicles', data['vehicles'].toString(), Icons.directions_car_outlined),
-        _buildStatCard('Parking', '${data['parking']}%', Icons.location_on_outlined),
-        _buildStatCard('Pending', data['pending'].toString(), Icons.access_time),
+        Row(
+          children: [
+            Expanded(
+                child: _StatCard(
+                    title: 'Residents',
+                    value: '${data['residents']}',
+                    icon: Icons.people_outline)),
+            const SizedBox(width: 12),
+            Expanded(
+                child: _VehiclesStatCard(
+                  total: (data['vehicles'] as int?) ?? 0,
+                  fourWheeler: (data['fourWheelerCount'] as int?) ?? 0,
+                  twoWheeler: (data['twoWheelerCount'] as int?) ?? 0,
+                )),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+                child: _StatCard(
+                    title: 'Parking',
+                    value: '${data['parking']}%',
+                    icon: Icons.location_on_outlined)),
+            const SizedBox(width: 12),
+            Expanded(
+                child: _StatCard(
+                    title: 'Pending',
+                    value: '${data['pending']}',
+                    icon: Icons.access_time)),
+          ],
+        ),
       ],
     );
   }
+}
 
-  Widget _buildStatCard(String title, String value, IconData icon) {
-    return Container(
+class _StatCard extends StatelessWidget {
+  const _StatCard({
+    required this.title,
+    required this.value,
+    required this.icon,
+    this.onTap,
+    this.trailing,
+  });
+
+  final String title;
+  final String value;
+  final IconData icon;
+  final VoidCallback? onTap;
+
+  /// Small hint widget rendered to the right of the title (e.g. "tap" badge).
+  final Widget? trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    final card = Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -171,17 +233,83 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
             children: [
               Icon(icon, size: 18, color: Colors.blue[700]),
               const SizedBox(width: 4),
-              Text(title, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+              Expanded(
+                child: Text(title,
+                    style:
+                        TextStyle(fontSize: 12, color: Colors.grey[600]),
+                    overflow: TextOverflow.ellipsis),
+              ),
+              ?trailing,
             ],
           ),
           const SizedBox(height: 4),
-          Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+          Text(value,
+              style:
+                  const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
         ],
       ),
     );
+    if (onTap == null) return card;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: card,
+    );
   }
+}
 
-  Widget _buildActionButtons(BuildContext context) {
+/// Tappable Vehicles stat — cycles Total → 4W → 2W → Total → ...
+class _VehiclesStatCard extends StatefulWidget {
+  const _VehiclesStatCard({
+    required this.total,
+    required this.fourWheeler,
+    required this.twoWheeler,
+  });
+
+  final int total;
+  final int fourWheeler;
+  final int twoWheeler;
+
+  @override
+  State<_VehiclesStatCard> createState() => _VehiclesStatCardState();
+}
+
+class _VehiclesStatCardState extends State<_VehiclesStatCard> {
+  int _mode = 0; // 0 = total, 1 = 4W, 2 = 2W
+
+  @override
+  Widget build(BuildContext context) {
+    late final String title;
+    late final int value;
+    switch (_mode) {
+      case 1:
+        title = '4-Wheelers';
+        value = widget.fourWheeler;
+        break;
+      case 2:
+        title = '2-Wheelers';
+        value = widget.twoWheeler;
+        break;
+      default:
+        title = 'Vehicles';
+        value = widget.total;
+    }
+    return _StatCard(
+      title: title,
+      value: '$value',
+      icon: Icons.directions_car_outlined,
+      onTap: () => setState(() => _mode = (_mode + 1) % 3),
+      trailing: Icon(Icons.touch_app_outlined,
+          size: 12, color: Colors.grey[400]),
+    );
+  }
+}
+
+class _ActionButtons extends StatelessWidget {
+  const _ActionButtons();
+
+  @override
+  Widget build(BuildContext context) {
     return GridView.count(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -190,57 +318,75 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
       mainAxisSpacing: 12,
       childAspectRatio: 1.8,
       children: [
-        _buildCircularActionButton(
-          context, 
-          'Add Resident', 
-          Icons.person_add_alt_1_outlined, 
-          Colors.yellow[100]!,
-          () => showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            builder: (context) => const AddResidentScreen(),
-          ),
+        _CircularActionButton(
+          label: 'Create Account',
+          icon: Icons.person_add_alt_outlined,
+          color: Colors.purple[100]!,
+          builder: (_) => const CreateAccountScreen(),
         ),
-        _buildCircularActionButton(
-          context, 
-          'Add Vehicle', 
-          Icons.local_shipping_outlined, 
-          Colors.teal[100]!,
-          () => showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            builder: (context) => const AddVehicleScreen(),
-          ),
+        _CircularActionButton(
+          label: 'Residents',
+          icon: Icons.people_alt_outlined,
+          color: Colors.yellow[100]!,
+          page: (_) => const ResidentsListScreen(),
         ),
-        _buildCircularActionButton(
-          context, 
-          'Add Smart Card', 
-          Icons.credit_card_outlined, 
-          Colors.blue[100]!,
-          () => showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            builder: (context) => const AddSmartCardScreen(),
-          ),
+        _CircularActionButton(
+          label: 'Vehicles',
+          icon: Icons.directions_car_outlined,
+          color: Colors.teal[100]!,
+          page: (_) => const VehiclesListScreen(),
         ),
-        _buildCircularActionButton(
-          context, 
-          'Visitor Pass', 
-          Icons.qr_code_scanner, 
-          Colors.orange[100]!,
-          () => showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            builder: (context) => const CreateVisitorPassScreen(),
-          ),
+        _CircularActionButton(
+          label: 'Smart Cards',
+          icon: Icons.credit_card_outlined,
+          color: Colors.blue[100]!,
+          page: (_) => const SmartCardsListScreen(),
+        ),
+        _CircularActionButton(
+          label: 'Visitor Pass',
+          icon: Icons.qr_code_scanner,
+          color: Colors.orange[100]!,
+          builder: (_) => const CreateVisitorPassScreen(),
         ),
       ],
     );
   }
+}
 
-  Widget _buildCircularActionButton(BuildContext context, String label, IconData icon, Color color, VoidCallback onTap) {
+class _CircularActionButton extends StatelessWidget {
+  const _CircularActionButton({
+    required this.label,
+    required this.icon,
+    required this.color,
+    this.builder,
+    this.page,
+  }) : assert(builder != null || page != null,
+            'Provide either a bottom-sheet builder or a full-page builder');
+
+  final String label;
+  final IconData icon;
+  final Color color;
+
+  /// Bottom-sheet builder. Used by quick "create" forms.
+  final WidgetBuilder? builder;
+
+  /// Full-page builder. Used by list screens that need their own scaffold.
+  final WidgetBuilder? page;
+
+  @override
+  Widget build(BuildContext context) {
     return InkWell(
-      onTap: onTap,
+      onTap: () {
+        if (page != null) {
+          Navigator.of(context).push(MaterialPageRoute(builder: page!));
+        } else {
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            builder: builder!,
+          );
+        }
+      },
       borderRadius: BorderRadius.circular(16),
       child: Container(
         decoration: BoxDecoration(
@@ -252,15 +398,12 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
           children: [
             Icon(icon, size: 28, color: Colors.black87),
             const SizedBox(height: 8),
-            Text(
-              label, 
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                fontSize: 13, 
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
+            Text(label,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87)),
           ],
         ),
       ),
@@ -270,7 +413,6 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> wit
 
 class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
   _SliverAppBarDelegate(this._tabBar);
-
   final TabBar _tabBar;
 
   @override
@@ -280,14 +422,9 @@ class _SliverAppBarDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Container(
-      color: Colors.white,
-      child: _tabBar,
-    );
+    return Container(color: Colors.white, child: _tabBar);
   }
 
   @override
-  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) {
-    return false;
-  }
+  bool shouldRebuild(_SliverAppBarDelegate oldDelegate) => false;
 }

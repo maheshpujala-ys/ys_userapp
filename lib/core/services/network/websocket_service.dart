@@ -1,27 +1,34 @@
 import 'dart:async';
-import 'dart:math';
 
+/// Placeholder for real-time admin dashboard updates.
+///
+/// Previously this emitted random mock values every 5 seconds, which overwrote
+/// the real stats fetched from `/api/v1/dashboard/stats`. The mock has been
+/// neutralized — the broadcast stream is kept alive (so `AdminController`'s
+/// `webSocketStream?.listen(...)` wiring still works), but no events are
+/// emitted until a real WebSocket endpoint is plugged in here.
 class WebSocketService {
-  final _socketController = StreamController<Map<String, dynamic>>.broadcast();
-  Timer? _timer;
+  StreamController<Map<String, dynamic>>? _controller;
 
-  Stream<Map<String, dynamic>> get stream => _socketController.stream;
+  Stream<Map<String, dynamic>> get stream {
+    _controller ??= StreamController<Map<String, dynamic>>.broadcast();
+    return _controller!.stream;
+  }
 
+  /// No-op for now. Wire a real WebSocket client (e.g. `web_socket_channel`)
+  /// when the backend exposes a URL, and forward incoming dashboard payloads
+  /// onto `_controller`.
   void connect() {
-    // In a real app, you would connect to your WebSocket server here.
-    _timer = Timer.periodic(const Duration(seconds: 5), (_) {
-      // Simulate receiving a real-time update from the WebSocket.
-      _socketController.add({
-        'residents': 480 + Random().nextInt(5),
-        'vehicles': 650 + Random().nextInt(5),
-        'parking': 78 + Random().nextInt(5),
-        'pending': 5 + Random().nextInt(5),
-      });
-    });
+    _controller ??= StreamController<Map<String, dynamic>>.broadcast();
   }
 
   void disconnect() {
-    _timer?.cancel();
-    _socketController.close();
+    // Nothing to tear down while the mock is disabled.
+  }
+
+  void dispose() {
+    disconnect();
+    _controller?.close();
+    _controller = null;
   }
 }

@@ -7,13 +7,14 @@ import 'package:yellowspotuser/features/residential/application/residential_cont
 import 'package:yellowspotuser/features/residential/domain/vehicle.dart';
 
 class ResidentialScreen extends ConsumerWidget {
-  const ResidentialScreen({Key? key}) : super(key: key);
+  const ResidentialScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final residentialState = ref.watch(ResidentialController.provider);
-    final authState = ref.watch(AuthController.provider);
-    final user = authState.asData?.value;
+    final isAdmin = ref.watch(AuthController.provider.select(
+      (s) => s.asData?.value?.roles.contains(UserRole.admin) ?? false,
+    ));
 
     return Scaffold(
       backgroundColor: Colors.grey[100],
@@ -22,12 +23,12 @@ class ResidentialScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _buildHeader(context, ref, data['society'] ?? '', data['unit'] ?? '', user),
+              _buildHeader(context, ref, data['society'] ?? '', data['unit'] ?? '', isAdmin),
               _buildOwnerCard(context, data['ownerName'] ?? ''),
               _buildActionCards(context),
               _buildSmartAccessCard(context),
               _buildEvCharging(context),
-              _buildMyVehicles(context, data['vehicles'] as List<Vehicle>? ?? []),
+              _buildMyVehicles(context, data['vehicles'] as List<Vehicle>? ?? const []),
             ],
           ),
         ),
@@ -37,7 +38,7 @@ class ResidentialScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context, WidgetRef ref, String society, String unit, AppUser? user) {
+  Widget _buildHeader(BuildContext context, WidgetRef ref, String society, String unit, bool isAdmin) {
     return Container(
       color: Colors.teal[400],
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
@@ -55,7 +56,7 @@ class ResidentialScreen extends ConsumerWidget {
                 ],
               ),
             ),
-            if (user != null && user.roles.contains(UserRole.admin))
+            if (isAdmin)
               TextButton.icon(
                 style: TextButton.styleFrom(backgroundColor: Colors.white.withOpacity(0.2)),
                 icon: const Icon(Icons.admin_panel_settings_outlined, color: Colors.white, size: 18),
@@ -253,16 +254,8 @@ class ResidentialScreen extends ConsumerWidget {
         children: [
           const Text('My Vehicles', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
-          ListView.builder(
-            shrinkWrap: true,
-            padding: EdgeInsets.zero,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: vehicles.length,
-            itemBuilder: (context, index) {
-              final vehicle = vehicles[index];
-              return VehicleListItem(vehicle: vehicle);
-            },
-          ),
+          // Small fixed list — Column avoids the cost of a nested scrollable.
+          for (final v in vehicles) VehicleListItem(key: ValueKey(v.number), vehicle: v),
         ],
       ),
     );
@@ -272,7 +265,7 @@ class ResidentialScreen extends ConsumerWidget {
 class VehicleListItem extends StatelessWidget {
   final Vehicle vehicle;
 
-  const VehicleListItem({Key? key, required this.vehicle}) : super(key: key);
+  const VehicleListItem({super.key, required this.vehicle});
 
   @override
   Widget build(BuildContext context) {

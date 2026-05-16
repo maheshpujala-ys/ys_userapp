@@ -4,52 +4,54 @@ import 'package:yellowspotuser/core/providers/app_providers.dart';
 import 'package:yellowspotuser/features/map/application/map_controller.dart';
 import 'package:yellowspotuser/features/parking/data/parking_repository.dart';
 
-class ParkingController extends StateNotifier<AsyncValue<List<Map<String, dynamic>>>> {
-  final ParkingRepository _parkingRepository;
-  final StateNotifierProviderRef<ParkingController, AsyncValue<List<Map<String, dynamic>>>> _ref;
-
-  ParkingController(this._parkingRepository, this._ref) : super(const AsyncValue.loading()) {
+class ParkingController
+    extends StateNotifier<AsyncValue<List<Map<String, dynamic>>>> {
+  ParkingController(this._parkingRepository, this._ref)
+      : super(const AsyncValue.loading()) {
     getNearbyParking();
   }
 
-  static final provider = StateNotifierProvider<ParkingController, AsyncValue<List<Map<String, dynamic>>>>((ref) {
+  final ParkingRepository _parkingRepository;
+  final Ref _ref;
+
+  static final provider = StateNotifierProvider.autoDispose<ParkingController,
+      AsyncValue<List<Map<String, dynamic>>>>((ref) {
     return ParkingController(ref.watch(ParkingRepository.provider), ref);
   });
 
-  /// A computed provider that filters the parking list based on the search query.
-  static final filteredProvider = Provider<AsyncValue<List<Map<String, dynamic>>>>((ref) {
+  /// Computed provider — filters the parking list by the current search query.
+  static final filteredProvider = Provider.autoDispose<
+      AsyncValue<List<Map<String, dynamic>>>>((ref) {
     final parkingState = ref.watch(provider);
     final searchQuery = ref.watch(searchQueryProvider).toLowerCase();
-
     return parkingState.whenData((parkingList) {
       if (searchQuery.isEmpty) return parkingList;
-      return parkingList.where((parking) {
-        final name = parking['mallName'].toString().toLowerCase();
-        final address = parking['address'].toString().toLowerCase();
+      return parkingList.where((p) {
+        final name = (p['mallName'] as String? ?? '').toLowerCase();
+        final address = (p['address'] as String? ?? '').toLowerCase();
         return name.contains(searchQuery) || address.contains(searchQuery);
-      }).toList();
+      }).toList(growable: false);
     });
   });
 
   Future<void> getNearbyParking() async {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(() async {
-      final parkingList = await _parkingRepository.getNearbyParking();
-      _addMarkersToMap(parkingList);
-      return parkingList;
+      final list = await _parkingRepository.getNearbyParking();
+      _publishMarkers(list);
+      return list;
     });
   }
 
-  void _addMarkersToMap(List<Map<String, dynamic>> parkingList) {
-    final mapController = _ref.read(mapControllerProvider.notifier);
-    for (var parking in parkingList) {
-      mapController.addMarker(
+  void _publishMarkers(List<Map<String, dynamic>> parkingList) {
+    final markers = <Marker>{
+      for (final p in parkingList)
         Marker(
-          markerId: MarkerId(parking['mallName']),
-          position: parking['latlng'],
-          infoWindow: InfoWindow(title: parking['mallName']),
+          markerId: MarkerId(p['mallName'] as String),
+          position: p['latlng'] as LatLng,
+          infoWindow: InfoWindow(title: p['mallName'] as String),
         ),
-      );
-    }
+    };
+    _ref.read(mapControllerProvider.notifier).setMarkers(markers);
   }
 }

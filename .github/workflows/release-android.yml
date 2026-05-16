@@ -1,0 +1,139 @@
+name: Release Android
+
+on:
+  # Manual trigger from the Actions tab.
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'apk | appbundle | both'
+        required: true
+        default: 'both'
+        type: choice
+        options: [apk, appbundle, both]
+      distribute:
+        description: 'Upload to Firebase App Distribution?'
+        required: true
+        default: false
+        type: boolean
+
+  # Automatic trigger on a version tag like `v1.2.3`.
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write  # needed to create a GitHub Release from a tag
+
+jobs:
+  build:
+    name: Build & sign
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.38.9'
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      # ── Signing config ─────────────────────────────────────────────────
+      # If the four keystore secrets are present, decode the keystore and
+      # generate `android/key.properties`. Otherwise the build falls back
+      # to the Flutter debug signing config (uploadable to Firebase App
+      # Distribution but NOT to Play Store).
+      - name: Configure signing (optional)
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
+          cat <<EOF > android/key.properties
+          storeFile=upload-keystore.jks
+          storePassword=$KEYSTORE_PASSWORD
+          keyAlias=$KEY_ALIAS
+          keyPassword=$KEY_PASSWORD
+          EOF
+
+      - name: Warn if unsigned
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 == '' }}
+        run: echo "::warning::No release keystore secrets found — building with debug signing. Not uploadable to Play Store."
+
+      # ── Build artifacts ────────────────────────────────────────────────
+      - name: Build APK
+        if: ${{ github.event.inputs.build_type != 'appbundle' }}
+        env:
+          GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+        run: |
+          flutter build apk --release \
+            --dart-define=GOOGLE_MAPS_API_KEY=$GOOGLE_MAPS_API_KEY
+
+      - name: Build App Bundle
+        if: ${{ github.event.inputs.build_type != 'apk' }}
+        env:
+          GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
+        run: |
+          flutter build appbundle --release \
+            --dart-define=GOOGLE_MAPS_API_KEY=$GOOGLE_MAPS_API_KEY
+
+      # ── Upload artifacts (always — even on tag builds) ─────────────────
+      - name: Upload APK artifact
+        if: ${{ github.event.inputs.build_type != 'appbundle' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-${{ github.ref_name }}-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 30
+
+      - name: Upload AAB artifact
+        if: ${{ github.event.inputs.build_type != 'apk' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release-${{ github.ref_name }}-aab
+          path: build/app/outputs/bundle/release/app-release.aab
+          retention-days: 30
+
+      # ── Firebase App Distribution (optional) ───────────────────────────
+      - name: Distribute APK to Firebase
+        if: >-
+          ${{ (github.event_name == 'push' || github.event.inputs.distribute == 'true')
+              && secrets.FIREBASE_APP_ID_ANDROID != ''
+              && github.event.inputs.build_type != 'appbundle' }}
+        env:
+          FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID_ANDROID }}
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          FIREBASE_TESTERS: ${{ vars.FIREBASE_TESTERS }}
+        run: |
+          npm install -g firebase-tools
+          firebase appdistribution:distribute \
+            build/app/outputs/flutter-apk/app-release.apk \
+            --app "$FIREBASE_APP_ID" \
+            --token "$FIREBASE_TOKEN" \
+            --testers "$FIREBASE_TESTERS" \
+            --release-notes "Build ${{ github.ref_name }} (${{ github.sha }})"
+
+      # ── GitHub Release on tag ──────────────────────────────────────────
+      - name: Create GitHub Release
+        if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/') }}
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            build/app/outputs/flutter-apk/app-release.apk
+            build/app/outputs/bundle/release/app-release.aab

@@ -7,26 +7,31 @@ final adminRepositoryProvider = Provider<AdminRepository>(
   (ref) => AdminRepository(ref.watch(dioProvider)),
 );
 
-final adminControllerProvider = StateNotifierProvider<AdminController, AsyncValue<Map<String, dynamic>>>((ref) {
-  return AdminController(ref.watch(adminRepositoryProvider));
+/// Dashboard controller — only alive while the admin dashboard is mounted.
+/// Subscribes to the websocket stream lazily to avoid wasted ticks.
+final adminControllerProvider = StateNotifierProvider.autoDispose<
+    AdminController, AsyncValue<Map<String, dynamic>>>((ref) {
+  final repo = ref.watch(adminRepositoryProvider);
+  final webSocket = ref.watch(webSocketProvider);
+  return AdminController(repo, webSocketStream: webSocket.stream);
 });
 
-final entryExitDataProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
-  final adminRepository = ref.watch(adminRepositoryProvider);
-  return adminRepository.getEntryExitData();
+final entryExitDataProvider =
+    FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) {
+  return ref.watch(adminRepositoryProvider).getEntryExitData();
 });
 
-final requestsDataProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
-  final adminRepository = ref.watch(adminRepositoryProvider);
-  return adminRepository.getRequestsData();
+final requestsDataProvider =
+    FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) {
+  return ref.watch(adminRepositoryProvider).getRequestsData();
 });
 
-final securityDataProvider = FutureProvider<Map<String, dynamic>>((ref) async {
-  final adminRepository = ref.watch(adminRepositoryProvider);
-  return adminRepository.getSecurityData();
+final securityDataProvider =
+    FutureProvider.autoDispose<Map<String, dynamic>>((ref) {
+  return ref.watch(adminRepositoryProvider).getSecurityData();
 });
 
-final activityDataProvider = FutureProvider<List<Map<String, dynamic>>>((ref) async {
-  final adminRepository = ref.watch(adminRepositoryProvider);
-  return adminRepository.getActivityData();
+final activityDataProvider =
+    FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) {
+  return ref.watch(adminRepositoryProvider).getActivityData();
 });
