@@ -90,11 +90,10 @@ class _ErrorState extends StatelessWidget {
               style: const TextStyle(color: Colors.white70),
             ),
             const SizedBox(height: 16),
-            OutlinedButton.icon(
+            OutlinedButton(
               style: OutlinedButton.styleFrom(foregroundColor: Colors.white),
               onPressed: onRetry,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
+              child: const Text('Retry'),
             ),
           ],
         ),

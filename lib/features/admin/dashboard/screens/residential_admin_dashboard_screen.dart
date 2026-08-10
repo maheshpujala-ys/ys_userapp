@@ -11,17 +11,17 @@ import 'package:yellowspotuser/features/admin/residents/screens/residents_list_s
 import 'package:yellowspotuser/features/admin/security/screens/security_screen.dart';
 import 'package:yellowspotuser/features/admin/smart_cards/screens/smart_cards_list_screen.dart';
 import 'package:yellowspotuser/features/admin/vehicles/screens/vehicles_list_screen.dart';
-import 'package:yellowspotuser/features/auth/application/auth_controller.dart';
+import 'package:yellowspotuser/features/auth/widgets/user_avatar_button.dart';
 
-class AdminDashboardScreen extends ConsumerStatefulWidget {
-  const AdminDashboardScreen({super.key});
+class ResidentialAdminDashboardScreen extends ConsumerStatefulWidget {
+  const ResidentialAdminDashboardScreen({super.key});
 
   @override
-  ConsumerState<AdminDashboardScreen> createState() =>
-      _AdminDashboardScreenState();
+  ConsumerState<ResidentialAdminDashboardScreen> createState() =>
+      _ResidentialAdminDashboardScreenState();
 }
 
-class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen>
+class _ResidentialAdminDashboardScreenState extends ConsumerState<ResidentialAdminDashboardScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController =
       TabController(length: 4, vsync: this);
@@ -127,18 +127,8 @@ class _TopBar extends ConsumerWidget {
                     ref.read(isAdminViewProvider.notifier).state = false,
               ),
             ),
-            const SizedBox(width: 4),
-            IconButton(
-              tooltip: 'Refresh stats',
-              icon: const Icon(Icons.refresh),
-              onPressed: () =>
-                  ref.read(adminControllerProvider.notifier).refresh(),
-            ),
-            IconButton(
-              icon: const Icon(Icons.logout, color: Colors.red),
-              onPressed: () =>
-                  ref.read(AuthController.provider.notifier).logout(),
-            ),
+            const SizedBox(width: 8),
+            const UserAvatarButton(),
           ],
         ),
       ],

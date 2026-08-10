@@ -12,6 +12,13 @@ class ApiEndpoints {
   static const String dashboardStats = '/api/v1/dashboard/stats';
   static const String dashboardParkingLogs = '/api/v1/dashboard/parking-logs';
 
+  // Corporate reports
+  static const String reportsAvailabilityList =
+      '/api/v1/dashboard/reports/availability-list';
+  static const String reportsDayWise = '/api/v1/dashboard/reports/day-wise';
+  static const String reportsDayWiseDownload =
+      '/api/v1/dashboard/reports/day-wise/download-excel';
+
   // User logs (admin activity)
   static const String userLogs = '/api/v1/user-logs';
 

@@ -12,7 +12,7 @@ class AppConfig {
   static String get apiBaseUrl {
     switch (current) {
       case AppEnvironment.localDev:
-        return 'http://localhost:8080';
+        return 'http://192.168.1.47:8080';
       case AppEnvironment.uat:
         return 'https://uat.yellowspottech.com';
       case AppEnvironment.production:

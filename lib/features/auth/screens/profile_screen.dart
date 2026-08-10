@@ -54,7 +54,16 @@ class ProfileScreen extends ConsumerWidget {
               _buildSettingsList(ref),
               const SizedBox(height: 24),
               OutlinedButton.icon(
-                onPressed: () => ref.read(AuthController.provider.notifier).logout(),
+                onPressed: () async {
+                  // Clear session first, then unwind any pushed routes so
+                  // AuthWrapper's freshly-rebuilt LoginScreen is on top.
+                  await ref
+                      .read(AuthController.provider.notifier)
+                      .logout();
+                  if (context.mounted) {
+                    Navigator.of(context).popUntil((r) => r.isFirst);
+                  }
+                },
                 icon: const Icon(Icons.logout, color: Colors.red),
                 label: const Text('Log Out', style: TextStyle(color: Colors.red)),
                 style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.red)),

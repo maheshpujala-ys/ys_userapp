@@ -5,15 +5,27 @@ import 'package:yellowspotuser/features/admin/residents/screens/add_resident_scr
 import 'package:yellowspotuser/features/admin/vehicles/application/registration_providers.dart';
 
 /// Admin-side list of residents (tenants). Pulls from GET /api/v1/tenants.
+///
+/// Corporate dashboards reuse this screen with `entityLabelSingular: 'Employee'`
+/// and `entityLabelPlural: 'Employees'` — the underlying tenants endpoint is
+/// shared across solution types.
 class ResidentsListScreen extends ConsumerWidget {
-  const ResidentsListScreen({super.key});
+  const ResidentsListScreen({
+    super.key,
+    this.entityLabelSingular = 'Resident',
+    this.entityLabelPlural = 'Residents',
+  });
+
+  final String entityLabelSingular;
+  final String entityLabelPlural;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final tenants = ref.watch(tenantsListProvider);
+    final addLabel = 'Add $entityLabelSingular';
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Residents')),
+      appBar: AppBar(title: Text(entityLabelPlural)),
       body: tenants.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => _ErrorState(
@@ -22,7 +34,10 @@ class ResidentsListScreen extends ConsumerWidget {
         ),
         data: (rows) {
           if (rows.isEmpty) {
-            return const _EmptyState();
+            return _EmptyState(
+              entityLabelSingular: entityLabelSingular,
+              entityLabelPlural: entityLabelPlural,
+            );
           }
           return RefreshIndicator(
             onRefresh: () async => ref.invalidate(tenantsListProvider),
@@ -50,14 +65,13 @@ class ResidentsListScreen extends ConsumerWidget {
         backgroundColor: Colors.yellow[700],
         foregroundColor: Colors.black,
         icon: const Icon(Icons.person_add_alt_1),
-        label: const Text('Add Resident'),
+        label: Text(addLabel),
         onPressed: () async {
           await showModalBottomSheet<void>(
             context: context,
             isScrollControlled: true,
             builder: (_) => const AddResidentScreen(),
           );
-          // Refresh so a freshly-added resident appears.
           ref.invalidate(tenantsListProvider);
         },
       ),
@@ -185,7 +199,13 @@ class _ResidentTile extends StatelessWidget {
 }
 
 class _EmptyState extends StatelessWidget {
-  const _EmptyState();
+  const _EmptyState({
+    required this.entityLabelSingular,
+    required this.entityLabelPlural,
+  });
+
+  final String entityLabelSingular;
+  final String entityLabelPlural;
 
   @override
   Widget build(BuildContext context) {
@@ -197,10 +217,11 @@ class _EmptyState extends StatelessWidget {
           children: [
             Icon(Icons.people_outline, size: 64, color: Colors.grey[400]),
             const SizedBox(height: 12),
-            const Text('No residents yet',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+            Text('No ${entityLabelPlural.toLowerCase()} yet',
+                style: const TextStyle(
+                    fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 4),
-            Text('Tap "Add Resident" to register the first one.',
+            Text('Tap "Add $entityLabelSingular" to register the first one.',
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.grey[600])),
           ],
@@ -228,10 +249,9 @@ class _ErrorState extends StatelessWidget {
             const SizedBox(height: 12),
             Text(message, textAlign: TextAlign.center),
             const SizedBox(height: 16),
-            OutlinedButton.icon(
+            OutlinedButton(
               onPressed: onRetry,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
+              child: const Text('Retry'),
             ),
           ],
         ),

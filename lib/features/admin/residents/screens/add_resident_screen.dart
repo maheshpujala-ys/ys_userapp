@@ -44,7 +44,7 @@ class _AddResidentScreenState extends ConsumerState<AddResidentScreen> {
     _emailController = TextEditingController(text: t?.email ?? '');
     _altMobileController = TextEditingController(text: t?.altMobile ?? '');
     _addressController = TextEditingController(text: t?.address ?? '');
-    _type = (t?.type?.isNotEmpty ?? false) ? t!.type! : 'Owner';
+    _type = _canonicalType(t?.type);
     _locationId = t?.locationId;
     _active = t?.isActive ?? true;
   }
@@ -107,6 +107,18 @@ class _AddResidentScreenState extends ConsumerState<AddResidentScreen> {
   String? _emptyToNull(String v) {
     final t = v.trim();
     return t.isEmpty ? null : t;
+  }
+
+  /// Maps any-case backend value ('tenant', 'OWNER', etc.) to the canonical
+  /// dropdown value. Unknown values fall back to 'Owner'.
+  static String _canonicalType(String? raw) {
+    const known = ['Owner', 'Tenant'];
+    if (raw == null || raw.trim().isEmpty) return 'Owner';
+    final lower = raw.trim().toLowerCase();
+    for (final k in known) {
+      if (k.toLowerCase() == lower) return k;
+    }
+    return 'Owner';
   }
 
   @override
