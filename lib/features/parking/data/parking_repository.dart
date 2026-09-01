@@ -4,9 +4,9 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:yellowspotuser/core/providers/app_providers.dart';
 
 class ParkingRepository {
-  final Dio _dio;
+  final Dio dio;
 
-  ParkingRepository(this._dio);
+  ParkingRepository(this.dio);
 
   static final provider = Provider<ParkingRepository>(
     (ref) => ParkingRepository(ref.watch(dioProvider)),

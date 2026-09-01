@@ -4,9 +4,9 @@ import 'package:yellowspotuser/core/providers/app_providers.dart';
 import 'package:yellowspotuser/features/auth/domain/app_user.dart';
 
 class AuthRepository {
-  final Dio _dio;
+  final Dio dio;
 
-  AuthRepository(this._dio);
+  AuthRepository(this.dio);
 
   static final provider = Provider<AuthRepository>(
     (ref) => AuthRepository(ref.watch(dioProvider)),

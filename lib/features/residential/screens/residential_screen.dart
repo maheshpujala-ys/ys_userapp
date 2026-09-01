@@ -7,7 +7,7 @@ import 'package:yellowspotuser/features/residential/application/residential_cont
 import 'package:yellowspotuser/features/residential/domain/vehicle.dart';
 
 class ResidentialScreen extends ConsumerWidget {
-  const ResidentialScreen({Key? key}) : super(key: key);
+  const ResidentialScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -57,7 +57,7 @@ class ResidentialScreen extends ConsumerWidget {
             ),
             if (user != null && user.roles.contains(UserRole.admin))
               TextButton.icon(
-                style: TextButton.styleFrom(backgroundColor: Colors.white.withOpacity(0.2)),
+                style: TextButton.styleFrom(backgroundColor: Colors.white.withValues(alpha: 0.2)),
                 icon: const Icon(Icons.admin_panel_settings_outlined, color: Colors.white, size: 18),
                 label: const Text('Admin', style: TextStyle(color: Colors.white, fontSize: 12)),
                 onPressed: () => ref.read(isAdminViewProvider.notifier).state = true,
@@ -169,7 +169,7 @@ class ResidentialScreen extends ConsumerWidget {
                       const Expanded(child: Text('RFID Tag', style: TextStyle(fontWeight: FontWeight.bold))),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                        decoration: BoxDecoration(color: Colors.green.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+                        decoration: BoxDecoration(color: Colors.green.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
                         child: const Text('Active', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 12)),
                       ),
                     ],
@@ -272,7 +272,7 @@ class ResidentialScreen extends ConsumerWidget {
 class VehicleListItem extends StatelessWidget {
   final Vehicle vehicle;
 
-  const VehicleListItem({Key? key, required this.vehicle}) : super(key: key);
+  const VehicleListItem({super.key, required this.vehicle});
 
   @override
   Widget build(BuildContext context) {
@@ -303,7 +303,7 @@ class VehicleListItem extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: vehicle.isActive ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+                color: vehicle.isActive ? Colors.green.withValues(alpha: 0.1) : Colors.red.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
@@ -342,7 +342,7 @@ class VehicleListItem extends StatelessWidget {
         border: Border.all(color: Colors.black87, width: 1),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 1,
             offset: const Offset(0, 1),
           )

@@ -1,7 +1,18 @@
 import 'package:flutter/material.dart';
 
 class BookSpotScreen extends StatelessWidget {
-  const BookSpotScreen({Key? key}) : super(key: key);
+  final String mallName;
+  final String address;
+  final int availableSpots;
+  final int totalSpots;
+
+  const BookSpotScreen({
+    super.key,
+    this.mallName = 'GVK One Mall',
+    this.address = 'Banjara Hills, Road No. 1, Hyderabad, Telangana 500034',
+    this.availableSpots = 15,
+    this.totalSpots = 50,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -17,8 +28,8 @@ class BookSpotScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('GVK One Mall', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            const Text('Banjara Hills, Road No. 1, Hyderabad, Telangana 500034'),
+            Text(mallName, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            Text(address),
             const SizedBox(height: 16),
             Row(
               children: const [
@@ -84,7 +95,7 @@ class BookSpotScreen extends StatelessWidget {
         Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         DropdownButtonFormField(
-          value: items.first,
+          initialValue: items.first,
           items: items.map((item) => DropdownMenuItem(value: item, child: Text(item))).toList(),
           onChanged: (value) {},
           decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),

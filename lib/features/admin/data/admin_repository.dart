@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
 
 class AdminRepository {
-  final Dio _dio;
+  final Dio dio;
 
-  AdminRepository(this._dio);
+  AdminRepository(this.dio);
 
   Future<Map<String, dynamic>> getDashboardData() async {
     // In a real app, you'd fetch this data from your API

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:yellowspotuser/core/providers/app_providers.dart';
 import 'package:yellowspotuser/features/map/application/map_controller.dart';
 import 'package:yellowspotuser/features/parking/application/parking_controller.dart';
 import 'package:yellowspotuser/features/parking/screens/book_spot_screen.dart';
@@ -64,7 +63,7 @@ class FindYourSpotScreen extends ConsumerWidget {
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withValues(alpha: 0.05),
                       blurRadius: 10,
                       spreadRadius: 1,
                     )
@@ -183,7 +182,7 @@ class ParkingListItem extends StatelessWidget {
                     Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                            color: Colors.green.withOpacity(0.1),
+                            color: Colors.green.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(8)),
                         child: Text(availability, style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 10))),
                   ],

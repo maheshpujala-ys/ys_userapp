@@ -131,7 +131,7 @@ class CarServicesScreen extends ConsumerWidget {
     return Expanded(
       child: Column(
         children: [
-          CircleAvatar(radius: 22, child: Icon(icon, size: 24), backgroundColor: Colors.red[100]),
+          CircleAvatar(radius: 22, backgroundColor: Colors.red[100], child: Icon(icon, size: 24)),
           const SizedBox(height: 8),
           Text(
             label, 
@@ -167,7 +167,7 @@ class CarServicesScreen extends ConsumerWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: CircleAvatar(child: Icon(icon, size: 24), backgroundColor: Colors.grey[200]),
+        leading: CircleAvatar(backgroundColor: Colors.grey[200], child: Icon(icon, size: 24)),
         title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

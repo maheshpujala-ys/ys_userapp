@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AddSmartCardScreen extends StatelessWidget {
-  const AddSmartCardScreen({Key? key}) : super(key: key);
+  const AddSmartCardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +65,7 @@ class AddSmartCardScreen extends StatelessWidget {
           Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
           DropdownButtonFormField(
-            value: items.first,
+            initialValue: items.first,
             items: items.map((item) => DropdownMenuItem(value: item, child: Text(item))).toList(),
             onChanged: (value) {},
             decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),

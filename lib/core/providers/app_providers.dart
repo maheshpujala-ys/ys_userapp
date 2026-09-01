@@ -22,7 +22,7 @@ final activeRoleProvider = StateProvider<UserRole?>((ref) => null);
 final webSocketProvider = Provider<WebSocketService>((ref) {
   final service = WebSocketService();
   service.connect();
-  ref.onDispose(() => service.disconnect());
+  ref.onDispose(() => service.dispose());
   return service;
 });
 

@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yellowspotuser/features/admin/data/admin_providers.dart';
 
 class EntryExitScreen extends ConsumerWidget {
-  const EntryExitScreen({Key? key}) : super(key: key);
+  const EntryExitScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -36,13 +36,13 @@ class EntryExitListItem extends StatelessWidget {
   final String timestamp;
 
   const EntryExitListItem({
-    Key? key,
+    super.key,
     required this.vehicleNumber,
     required this.unit,
     required this.owner,
     required this.isEntry,
     required this.timestamp,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

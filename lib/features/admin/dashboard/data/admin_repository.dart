@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yellowspotuser/core/providers/app_providers.dart';
 
 class AdminRepository {
-  final Dio _dio;
+  final Dio dio;
 
-  AdminRepository(this._dio);
+  AdminRepository(this.dio);
 
   static final provider = Provider<AdminRepository>(
     (ref) => AdminRepository(ref.watch(dioProvider)),

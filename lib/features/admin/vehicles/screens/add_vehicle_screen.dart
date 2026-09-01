@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AddVehicleScreen extends StatelessWidget {
-  const AddVehicleScreen({Key? key}) : super(key: key);
+  const AddVehicleScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -85,7 +85,7 @@ class AddVehicleScreen extends StatelessWidget {
           Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
           DropdownButtonFormField(
-            value: items.first,
+            initialValue: items.first,
             items: items.map((item) => DropdownMenuItem(value: item, child: Text(item))).toList(),
             onChanged: (value) {},
             decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),

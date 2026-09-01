@@ -147,7 +147,7 @@ class QuickServicesScreen extends ConsumerWidget {
       children: [
         CircleAvatar(
           radius: 22, 
-          backgroundColor: color.withOpacity(0.1),
+          backgroundColor: color.withValues(alpha: 0.1),
           child: Icon(icon, size: 22, color: color),
         ),
         const SizedBox(height: 6),

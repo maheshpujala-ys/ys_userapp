@@ -5,7 +5,7 @@ import 'package:yellowspotuser/features/auth/application/auth_controller.dart';
 import 'package:yellowspotuser/features/auth/domain/app_user.dart';
 
 class RoleSwitcher extends ConsumerWidget {
-  const RoleSwitcher({Key? key}) : super(key: key);
+  const RoleSwitcher({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

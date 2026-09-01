@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:yellowspotuser/features/services/screens/book_a_car_screen.dart';
-import 'package:yellowspotuser/features/services/screens/car_services_screen.dart';
-import 'package:yellowspotuser/features/parking/screens/find_your_spot_screen.dart';
+import 'package:yellowspotuser/core/theme/app_colors.dart';
 import 'package:yellowspotuser/features/auth/screens/profile_screen.dart';
-import 'package:yellowspotuser/features/services/screens/quick_services_screen.dart';
-import 'package:yellowspotuser/features/residential/screens/residential_screen.dart';
+import 'package:yellowspotuser/features/ev_charging/screens/ev_charging_screen.dart';
+import 'package:yellowspotuser/features/home/screens/home_dashboard_screen.dart';
+import 'package:yellowspotuser/features/parking/screens/parking_hub_screen.dart';
+import 'package:yellowspotuser/features/residence/access_pass/screens/digital_access_pass_screen.dart';
+import 'package:yellowspotuser/features/residence/screens/residence_hub_screen.dart';
+import 'package:yellowspotuser/features/residence/visitors/screens/visitor_management_screen.dart';
+import 'package:yellowspotuser/features/services/screens/services_hub_screen.dart';
+import 'package:yellowspotuser/features/vehicles/screens/my_garage_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,14 +19,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
-  final List<Widget> _screens = [
-    const FindYourSpotScreen(),
-    const ResidentialScreen(),
-    const QuickServicesScreen(),
-    const CarServicesScreen(),
-    const BookACarScreen(),
-    const ProfileScreen(),
-  ];
 
   void _onItemTapped(int index) {
     setState(() {
@@ -32,40 +28,66 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final List<Widget> screens = [
+      HomeDashboardScreen(
+        onNavigateTab: (index) => _onItemTapped(index),
+        onInviteGuest: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const VisitorManagementScreen()),
+        ),
+        onAccessPass: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const DigitalAccessPassScreen()),
+        ),
+        onMyGarage: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const MyGarageScreen()),
+        ),
+        onEvCharging: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const EvChargingScreen()),
+        ),
+      ),
+      const ParkingHubScreen(),
+      const ServicesHubScreen(),
+      const ResidenceHubScreen(),
+      const ProfileScreen(),
+    ];
+
     return Scaffold(
-      body: _screens[_selectedIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
-            label: 'Find Your Spot',
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: screens,
+      ),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _selectedIndex,
+        onDestinationSelected: _onItemTapped,
+        backgroundColor: isDark ? AppColors.surfaceDark : Colors.white,
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(Icons.home_rounded),
+            label: 'Home',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Residential',
+          NavigationDestination(
+            icon: Icon(Icons.local_parking_outlined),
+            selectedIcon: Icon(Icons.local_parking_rounded),
+            label: 'Parking',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.miscellaneous_services),
-            label: 'Quick Services',
+          NavigationDestination(
+            icon: Icon(Icons.car_repair_outlined),
+            selectedIcon: Icon(Icons.car_repair_rounded),
+            label: 'Services',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.car_rental),
-            label: 'Car Services',
+          NavigationDestination(
+            icon: Icon(Icons.apartment_outlined),
+            selectedIcon: Icon(Icons.apartment_rounded),
+            label: 'Residence',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.book_online),
-            label: 'Book a Car',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
+          NavigationDestination(
+            icon: Icon(Icons.person_outline_rounded),
+            selectedIcon: Icon(Icons.person_rounded),
             label: 'Profile',
           ),
         ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.amber[800],
-        unselectedItemColor: Colors.grey,
-        showUnselectedLabels: true,
-        onTap: _onItemTapped,
       ),
     );
   }

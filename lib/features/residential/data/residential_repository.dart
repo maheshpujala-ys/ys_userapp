@@ -4,9 +4,9 @@ import 'package:yellowspotuser/core/providers/app_providers.dart';
 import 'package:yellowspotuser/features/residential/domain/vehicle.dart';
 
 class ResidentialRepository {
-  final Dio _dio;
+  final Dio dio;
 
-  ResidentialRepository(this._dio);
+  ResidentialRepository(this.dio);
 
   static final provider = Provider<ResidentialRepository>(
     (ref) => ResidentialRepository(ref.watch(dioProvider)),

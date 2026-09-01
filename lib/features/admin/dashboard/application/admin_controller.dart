@@ -7,7 +7,8 @@ class AdminController extends StateNotifier<AsyncValue<Map<String, dynamic>>> {
   final AdminRepository _adminRepository;
   StreamSubscription? _webSocketSubscription;
 
-  AdminController(this._adminRepository, Stream<Map<String, dynamic>> webSocketStream) : super(const AsyncValue.loading()) {
+  AdminController(this._adminRepository, Stream<Map<String, dynamic>> webSocketStream)
+      : super(const AsyncValue.loading()) {
     _webSocketSubscription = webSocketStream.listen(updateState);
     getDashboardData();
   }
@@ -23,8 +24,27 @@ class AdminController extends StateNotifier<AsyncValue<Map<String, dynamic>>> {
     state = await AsyncValue.guard(() => _adminRepository.getDashboardData());
   }
 
-  void updateState(Map<String, dynamic> data) {
-    state = AsyncValue.data(data);
+  void updateState(Map<String, dynamic> socketEvent) {
+    final currentData = state.asData?.value ?? {
+      'residents': 480,
+      'vehicles': 650,
+      'parking': 78,
+      'pending': 5,
+    };
+
+    if (socketEvent.containsKey('data') && socketEvent['data'] is Map<String, dynamic>) {
+      final metrics = socketEvent['data'] as Map<String, dynamic>;
+      state = AsyncValue.data({
+        ...currentData,
+        if (metrics.containsKey('availableParking')) 'parking': metrics['availableParking'],
+        if (metrics.containsKey('pendingDeliveries')) 'pending': metrics['pendingDeliveries'],
+      });
+    } else {
+      state = AsyncValue.data({
+        ...currentData,
+        ...socketEvent,
+      });
+    }
   }
 
   @override
