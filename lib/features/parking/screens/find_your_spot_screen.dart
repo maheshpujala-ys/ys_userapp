@@ -22,6 +22,7 @@ class FindYourSpotScreen extends ConsumerWidget {
             ),
             markers: mapState.asData?.value ?? {},
             onMapCreated: (GoogleMapController controller) {
+              // ignore: deprecated_member_use
               controller.setMapStyle('''
                 [
                   {

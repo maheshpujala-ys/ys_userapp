@@ -6,7 +6,7 @@ import 'package:yellowspotuser/features/parking/data/parking_repository.dart';
 
 class ParkingController extends StateNotifier<AsyncValue<List<Map<String, dynamic>>>> {
   final ParkingRepository _parkingRepository;
-  final StateNotifierProviderRef<ParkingController, AsyncValue<List<Map<String, dynamic>>>> _ref;
+  final Ref _ref;
 
   ParkingController(this._parkingRepository, this._ref) : super(const AsyncValue.loading()) {
     getNearbyParking();

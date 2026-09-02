@@ -219,10 +219,13 @@ class _EmergencySosSheetState extends State<EmergencySosSheet> {
                           ],
                         ),
                       ),
+                      // ignore: deprecated_member_use
                       Radio<String>(
                         value: item['id'] as String,
+                        // ignore: deprecated_member_use
                         groupValue: _selectedEmergency,
                         activeColor: AppColors.error,
+                        // ignore: deprecated_member_use
                         onChanged: (val) => setState(() => _selectedEmergency = val),
                       ),
                     ],

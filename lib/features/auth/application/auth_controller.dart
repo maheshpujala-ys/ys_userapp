@@ -7,7 +7,7 @@ import 'package:yellowspotuser/features/auth/domain/app_user.dart';
 class AuthController extends StateNotifier<AsyncValue<AppUser?>> {
   final AuthRepository _authRepository;
   final FlutterSecureStorage _secureStorage;
-  final StateNotifierProviderRef _ref;
+  final Ref _ref;
 
   AuthController(this._authRepository, this._secureStorage, this._ref) : super(const AsyncValue.loading()) {
     tryAutoLogin();

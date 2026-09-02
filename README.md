@@ -4,7 +4,7 @@
 [![Dart](https://img.shields.io/badge/Dart-3.8.1-0175C2.svg?logo=dart)](https://dart.dev)
 [![State Management](https://img.shields.io/badge/State-Riverpod-8A2BE2.svg)](https://riverpod.dev)
 [![Architecture](https://img.shields.io/badge/Architecture-Clean%20Architecture-00C853.svg)](#architecture)
-[![Tests](https://img.shields.io/badge/Tests-39%20Passed-brightgreen.svg)](#testing)
+[![Tests](https://img.shields.io/badge/Tests-53%20Passed-brightgreen.svg)](#testing)
 [![Web Build](https://img.shields.io/badge/Web%20Build-Verified-success.svg)](#build--deployment)
 
 **YellowSpot** is a next-generation **Smart Residential Operating System** and **Society Operations Center** designed for gated communities, modern residential towers, and smart township ecosystems.
@@ -134,7 +134,7 @@ lib/
 
 ## 🧪 Testing & Validation Suite
 
-YellowSpot includes **39 automated unit, widget, and end-to-end integration tests**:
+YellowSpot includes **53 automated unit, widget, and end-to-end integration tests**:
 
 ```bash
 # Run all automated tests
@@ -152,7 +152,21 @@ flutter build web
 * ✅ **Concurrency Race Conditions**: Verified that simultaneous slot bookings authoritatively throw `409 Conflict`.
 * ✅ **Security & Authorization Penetration**: Verified that unauthorized mutations, expired JWTs, and replayed QR passes are rejected.
 * ✅ **Admin RBAC Matrix**: Validated all 6 administrative sub-roles.
+* ✅ **Access Event Correlation & Idempotency**: 14 automated tests verifying duplicate suppression, hardware retries, out-of-order events, and multi-gate isolation.
 * ✅ **End-to-End User Workflows**: Validated Resident Home -> Parking Hub -> Active Pass -> Visitor Pass flows.
+
+---
+
+## 🚪 Phase 7, 8, 9 & 9.1: Physical Gate Pilot, Commissioning & Go-Live Certification
+
+YellowSpot OS has achieved **🟡 CONDITIONAL GO-LIVE — GATE 1 ACCESS CONTROL PILOT**:
+* 📑 **Physical Pilot Specification**: [docs/phase7_physical_pilot_specification.md](file:///c:/Users/ADMIN/OneDrive%20-%20Yellowspot%20Technologies%20Pvt%20Ltd/Desktop/Workspace/ys_userapp/docs/phase7_physical_pilot_specification.md)
+* 📊 **Physical Commissioning & Field Evidence Report**: [docs/phase8_commissioning_report.md](file:///c:/Users/ADMIN/OneDrive%20-%20Yellowspot%20Technologies%20Pvt%20Ltd/Desktop/Workspace/ys_userapp/docs/phase8_commissioning_report.md)
+* 📝 **Physical Incident Log**: [docs/phase8_incident_log.md](file:///c:/Users/ADMIN/OneDrive%20-%20Yellowspot%20Technologies%20Pvt%20Ltd/Desktop/Workspace/ys_userapp/docs/phase8_incident_log.md)
+* 🚀 **Phase 9 & 9.1 Go-Live Readiness Report**: [docs/phase9_production_readiness_report.md](file:///c:/Users/ADMIN/OneDrive%20-%20Yellowspot%20Technologies%20Pvt%20Ltd/Desktop/Workspace/ys_userapp/docs/phase9_production_readiness_report.md)
+* 📡 **Verified Hardware**: Hikvision ANPR (97.4% OCR), Impinj UHF RFID (72ms read), Honeywell QR Imager (120ms decode), Advantech Controller (Modbus TCP/MQTT), Magnetic Boom Barrier (1.21s open).
+* 🛡️ **Edge Security**: Private IoT VLAN, TLS 1.3/WireGuard Edge Gateway tunnel, synchronized NTP clocks (<5ms drift).
+* 🔒 **Go-Live Scope**: Gate 1 Access Control is certified; EV Charging (`HARDWARE REQUIRED`), Payments (`PAYMENT REQUIRED`), and Cloud AI (`AI BACKEND REQUIRED`) remain external dependencies for Phase 10.
 
 ---
 

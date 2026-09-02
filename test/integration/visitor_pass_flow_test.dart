@@ -9,7 +9,7 @@ import 'package:yellowspotuser/features/auth/domain/app_user.dart';
 import 'package:yellowspotuser/features/core/screens/home_screen.dart';
 
 class MockAuthController extends AuthController {
-  MockAuthController(AppUser user, StateNotifierProviderRef ref)
+  MockAuthController(AppUser user, Ref ref)
       : super(AuthRepository(Dio()), const FlutterSecureStorage(), ref) {
     state = AsyncValue.data(user);
   }
