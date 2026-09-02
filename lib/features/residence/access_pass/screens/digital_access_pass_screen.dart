@@ -14,6 +14,7 @@ class DigitalAccessPassScreen extends ConsumerWidget {
     final authState = ref.watch(AuthController.provider);
     final user = authState.asData?.value;
     final userName = user?.name.isNotEmpty == true ? user!.name : 'Alex Morgan';
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
@@ -29,15 +30,20 @@ class DigitalAccessPassScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(24),
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                gradient: LinearGradient(
+                  colors: isDark
+                      ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
+                      : [const Color(0xFFFFFBEB), const Color(0xFFFEF3C7)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                border: Border.all(color: AppColors.primary.withValues(alpha: 0.4), width: 1.5),
+                border: Border.all(
+                  color: isDark ? AppColors.primary.withValues(alpha: 0.4) : AppColors.primary,
+                  width: 1.5,
+                ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.3),
+                    color: isDark ? Colors.black.withValues(alpha: 0.3) : AppColors.primary.withValues(alpha: 0.15),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),
@@ -57,13 +63,13 @@ class DigitalAccessPassScreen extends ConsumerWidget {
                               color: AppColors.primary,
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: const Icon(Icons.flash_on_rounded, color: Colors.black, size: 20),
+                            child: const Icon(Icons.flash_on_rounded, color: Colors.black87, size: 20),
                           ),
                           const SizedBox(width: 8),
-                          const Text(
+                          Text(
                             'YELLOWSPOT PASS',
                             style: TextStyle(
-                              color: Colors.white,
+                              color: isDark ? Colors.white : AppColors.textPrimaryLight,
                               fontWeight: FontWeight.w900,
                               letterSpacing: 1.5,
                               fontSize: 14,
@@ -78,17 +84,20 @@ class DigitalAccessPassScreen extends ConsumerWidget {
 
                   Text(
                     userName,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: isDark ? Colors.white : AppColors.textPrimaryLight,
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
                       letterSpacing: -0.2,
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
+                  Text(
                     'Unit A-1204 • Palm Meadows Luxury Society',
-                    style: TextStyle(color: Colors.white70, fontSize: 13),
+                    style: TextStyle(
+                      color: isDark ? Colors.white70 : AppColors.textSecondaryLight,
+                      fontSize: 13,
+                    ),
                   ),
                   const SizedBox(height: 24),
 

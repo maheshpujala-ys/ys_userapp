@@ -167,22 +167,41 @@ class _WalletScreenState extends State<WalletScreen> {
               padding: const EdgeInsets.all(22),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                gradient: LinearGradient(
+                  colors: isDark
+                      ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
+                      : [const Color(0xFFFFF8E1), const Color(0xFFFFE082)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+                border: Border.all(
+                  color: isDark ? AppColors.primary.withValues(alpha: 0.3) : AppColors.primary,
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: isDark ? Colors.black.withValues(alpha: 0.3) : AppColors.primary.withValues(alpha: 0.2),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('Total Available Balance', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                  Text(
+                    'Total Available Balance',
+                    style: TextStyle(
+                      color: isDark ? Colors.white70 : AppColors.textSecondaryLight,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                   const SizedBox(height: 6),
                   Text(
                     '₹${_balance.toStringAsFixed(2)}',
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: isDark ? Colors.white : AppColors.textPrimaryLight,
                       fontSize: 32,
                       fontWeight: FontWeight.w900,
                       letterSpacing: -0.5,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yellowspotuser/core/theme/app_colors.dart';
 import 'package:yellowspotuser/features/auth/application/auth_controller.dart';
 
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
@@ -57,10 +58,14 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
               const SizedBox(height: 32),
               ElevatedButton(
                 onPressed: authState.isLoading ? null : _submit,
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.yellow[700]),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.black,
+                  minimumSize: const Size.fromHeight(50),
+                ),
                 child: authState.isLoading 
-                  ? const CircularProgressIndicator() 
-                  : const Text('Send Reset Link', style: TextStyle(color: Colors.black)),
+                  ? const CircularProgressIndicator(color: Colors.black) 
+                  : const Text('Send Reset Link', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
               ),
             ],
           ),

@@ -35,11 +35,12 @@ abstract final class AppColors {
   static const Color tealContainer = Color(0xFFCCFBF1);
 
   // Neutral Background & Surface Tokens (Light Mode)
-  static const Color backgroundLight = Color(0xFFF8FAFC); // Slate 50
+  static const Color backgroundLight = Color(0xFFF7F8FA);
   static const Color surfaceLight = Color(0xFFFFFFFF);
+  static const Color surfaceSecondaryLight = Color(0xFFF2F4F7);
   static const Color surfaceElevatedLight = Color(0xFFFFFFFF);
-  static const Color borderLight = Color(0xFFE2E8F0); // Slate 200
-  static const Color dividerLight = Color(0xFFF1F5F9); // Slate 100
+  static const Color borderLight = Color(0xFFEAECF0);
+  static const Color dividerLight = Color(0xFFF2F4F7);
 
   // Neutral Background & Surface Tokens (Dark Mode)
   static const Color backgroundDark = Color(0xFF0B0F17); // Deep OLED dark
@@ -49,9 +50,9 @@ abstract final class AppColors {
   static const Color dividerDark = Color(0xFF1E293B);
 
   // Typography & Content Colors
-  static const Color textPrimaryLight = Color(0xFF0F172A); // Slate 900
-  static const Color textSecondaryLight = Color(0xFF64748B); // Slate 500
-  static const Color textMutedLight = Color(0xFF94A3B8); // Slate 400
+  static const Color textPrimaryLight = Color(0xFF111827);
+  static const Color textSecondaryLight = Color(0xFF667085);
+  static const Color textMutedLight = Color(0xFF98A2B3);
 
   static const Color textPrimaryDark = Color(0xFFF8FAFC);
   static const Color textSecondaryDark = Color(0xFF94A3B8);

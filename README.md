@@ -4,10 +4,25 @@
 [![Dart](https://img.shields.io/badge/Dart-3.8.1-0175C2.svg?logo=dart)](https://dart.dev)
 [![State Management](https://img.shields.io/badge/State-Riverpod-8A2BE2.svg)](https://riverpod.dev)
 [![Architecture](https://img.shields.io/badge/Architecture-Clean%20Architecture-00C853.svg)](#architecture)
-[![Tests](https://img.shields.io/badge/Tests-53%20Passed-brightgreen.svg)](#testing)
+[![Tests](https://img.shields.io/badge/Tests-61%20Passed-brightgreen.svg)](#testing)
 [![Web Build](https://img.shields.io/badge/Web%20Build-Verified-success.svg)](#build--deployment)
 
 **YellowSpot** is a next-generation **Smart Residential Operating System** and **Society Operations Center** designed for gated communities, modern residential towers, and smart township ecosystems.
+
+---
+
+## ☀️ Design System & Global Theme Architecture
+
+YellowSpot User App features a **Light-First Design System** with dynamic live theme switching:
+
+* **Default Theme**: **☀️ LIGHT THEME** — Clean white cards (`#FFFFFF`), subtle borders (`#EAECF0`), neutral canvas (`#F7F8FA`), dark charcoal typography (`#111827`), muted secondary text (`#667085`), and YellowSpot signature yellow accents.
+* **Theme Modes**:
+  * ☀️ **Light**: Polished, modern residential aesthetic with high contrast and subtle shadows.
+  * 🌙 **Dark**: Deep OLED/slate dark mode for low-light environments.
+  * ⚙️ **System Default**: Automatically synchronizes with the host operating system brightness.
+* **Profile Appearance Selector**: Live switching directly from the **Profile & Settings** screen without requiring an app restart.
+* **Persistent Preferences**: Theme choice persists across restarts, logouts, and sessions via `FlutterSecureStorage` (`app_theme_mode`).
+* **Centralized Riverpod Architecture**: Controlled via `ThemeController` (`themeControllerProvider`) feeding `MaterialApp.themeMode`.
 
 ---
 

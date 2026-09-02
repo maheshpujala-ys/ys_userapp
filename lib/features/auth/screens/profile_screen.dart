@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:yellowspotuser/core/theme/app_colors.dart';
 import 'package:yellowspotuser/core/theme/app_text_styles.dart';
+import 'package:yellowspotuser/core/theme/theme_controller.dart';
 import 'package:yellowspotuser/core/widgets/app_card.dart';
 import 'package:yellowspotuser/core/widgets/app_status_pill.dart';
 import 'package:yellowspotuser/features/ai_assistant/screens/ai_assistant_screen.dart';
@@ -184,7 +185,58 @@ class ProfileScreen extends ConsumerWidget {
                   const SizedBox(height: 16),
                 ],
 
-                // 4. App Preferences & Settings
+                // 4. Appearance & Theme Selection
+                AppCard(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(Icons.palette_outlined, color: AppColors.primaryDark, size: 22),
+                          const SizedBox(width: 10),
+                          Text(
+                            'Appearance',
+                            style: AppTextStyles.titleSmall.copyWith(fontWeight: FontWeight.w800),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      _buildThemeOption(
+                        context: context,
+                        ref: ref,
+                        title: 'Light Theme',
+                        subtitle: 'Clean white surfaces with yellow accents (Recommended)',
+                        icon: Icons.light_mode_rounded,
+                        mode: ThemeMode.light,
+                        currentMode: ref.watch(themeControllerProvider),
+                      ),
+                      const Divider(height: 16),
+                      _buildThemeOption(
+                        context: context,
+                        ref: ref,
+                        title: 'Dark Theme',
+                        subtitle: 'Deep dark surfaces for low-light environments',
+                        icon: Icons.dark_mode_rounded,
+                        mode: ThemeMode.dark,
+                        currentMode: ref.watch(themeControllerProvider),
+                      ),
+                      const Divider(height: 16),
+                      _buildThemeOption(
+                        context: context,
+                        ref: ref,
+                        title: 'System Default',
+                        subtitle: 'Automatically follow device operating system setting',
+                        icon: Icons.settings_brightness_rounded,
+                        mode: ThemeMode.system,
+                        currentMode: ref.watch(themeControllerProvider),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // 5. App Preferences & Settings
                 AppCard(
                   padding: EdgeInsets.zero,
                   child: Column(
@@ -255,6 +307,83 @@ class ProfileScreen extends ConsumerWidget {
       subtitle: subtitle != null ? Text(subtitle, style: const TextStyle(fontSize: 11, color: AppColors.textMutedLight)) : null,
       trailing: const Icon(Icons.chevron_right, size: 18, color: AppColors.textMutedLight),
       onTap: onTap,
+    );
+  }
+
+  Widget _buildThemeOption({
+    required BuildContext context,
+    required WidgetRef ref,
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required ThemeMode mode,
+    required ThemeMode currentMode,
+  }) {
+    final isSelected = mode == currentMode;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return InkWell(
+      onTap: () => ref.read(themeControllerProvider.notifier).setThemeMode(mode),
+      borderRadius: BorderRadius.circular(10),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? (isDark ? AppColors.primary.withValues(alpha: 0.2) : AppColors.primaryContainer)
+                    : (isDark ? AppColors.surfaceElevatedDark : AppColors.dividerLight),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                color: isSelected ? AppColors.primaryDark : AppColors.textSecondaryLight,
+                size: 20,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                      fontSize: 14,
+                      color: isSelected
+                          ? (isDark ? AppColors.primary : AppColors.textPrimaryLight)
+                          : (isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (isSelected)
+              const Icon(
+                Icons.check_circle_rounded,
+                color: AppColors.primaryDark,
+                size: 22,
+              )
+            else
+              Icon(
+                Icons.circle_outlined,
+                color: isDark ? AppColors.borderDark : AppColors.borderLight,
+                size: 22,
+              ),
+          ],
+        ),
+      ),
     );
   }
 }

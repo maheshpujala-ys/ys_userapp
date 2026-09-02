@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:yellowspotuser/core/theme/app_colors.dart';
+import 'package:yellowspotuser/core/theme/app_text_styles.dart';
+import 'package:yellowspotuser/core/widgets/app_card.dart';
+import 'package:yellowspotuser/core/widgets/app_status_pill.dart';
+import 'package:yellowspotuser/core/widgets/section_header.dart';
 
 class BookSpotScreen extends StatelessWidget {
   final String mallName;
@@ -8,67 +13,110 @@ class BookSpotScreen extends StatelessWidget {
 
   const BookSpotScreen({
     super.key,
-    this.mallName = 'GVK One Mall',
-    this.address = 'Banjara Hills, Road No. 1, Hyderabad, Telangana 500034',
+    this.mallName = 'Palm Meadows Tower A',
+    this.address = 'Tower A - Basement 1, Hyderabad',
     this.availableSpots = 15,
     this.totalSpots = 50,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Book Your Spot'),
+        title: const Text('Reserve Parking Slot'),
         actions: [
-          IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.of(context).pop()),
+          IconButton(icon: const Icon(Icons.close_rounded), onPressed: () => Navigator.of(context).pop()),
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+        physics: const BouncingScrollPhysics(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(mallName, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            Text(address),
-            const SizedBox(height: 16),
-            Row(
-              children: const [
-                Icon(Icons.access_time, size: 16, color: Colors.green),
-                SizedBox(width: 4),
-                Text('Open 24/7', style: TextStyle(color: Colors.green)),
-                SizedBox(width: 16),
-                Icon(Icons.local_parking, size: 16, color: Colors.green),
-                SizedBox(width: 4),
-                Text('45 Available spots', style: TextStyle(color: Colors.green)),
-              ],
+            AppCard(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          mallName,
+                          style: AppTextStyles.titleMedium.copyWith(fontWeight: FontWeight.w800),
+                        ),
+                      ),
+                      AppStatusPill(
+                        label: '$availableSpots Open',
+                        type: availableSpots > 5 ? StatusType.success : StatusType.warning,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    address,
+                    style: AppTextStyles.bodySmall.copyWith(
+                      color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Divider(),
+                  const SizedBox(height: 8),
+                  const Row(
+                    children: [
+                      Icon(Icons.access_time_rounded, size: 16, color: AppColors.success),
+                      SizedBox(width: 4),
+                      Text('Open 24/7 Access', style: TextStyle(color: AppColors.successDark, fontWeight: FontWeight.w600, fontSize: 12)),
+                      SizedBox(width: 16),
+                      Icon(Icons.local_parking_rounded, size: 16, color: AppColors.primaryDark),
+                      SizedBox(width: 4),
+                      Text('Covered Bay', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12)),
+                    ],
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
+
+            const SectionHeader(title: 'Reservation Details'),
             Row(
               children: [
-                Expanded(child: _buildTextField(label: 'Vehicle Number', initialValue: 'TS09ER1234')),
-                const SizedBox(width: 16),
-                Expanded(child: _buildDropdownField(label: 'Duration', items: ['2 hours', '4 hours', '6 hours'])),
+                Expanded(child: _buildTextField(label: 'Vehicle Plate', initialValue: 'TS09ER1234')),
+                const SizedBox(width: 12),
+                Expanded(child: _buildDropdownField(label: 'Duration', items: ['2 hours', '4 hours', '8 hours', 'Full Day'])),
               ],
             ),
-            const SizedBox(height: 24),
-            _buildPriceBreakdown(),
-            const SizedBox(height: 24),
-            const Text('Other Services (Optional)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
+
+            _buildPriceBreakdown(isDark),
+            const SizedBox(height: 20),
+
+            const SectionHeader(title: 'Add-on Services (Optional)'),
             _buildOptionalServices(),
-            const SizedBox(height: 24),
-            const Text('Choose Payment Option', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
+
+            const SectionHeader(title: 'Payment Method'),
             _buildPaymentOptions(),
+            const SizedBox(height: 24),
           ],
         ),
       ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: ElevatedButton(
-          onPressed: () {},
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.yellow[700], minimumSize: const Size.fromHeight(50)),
-          child: const Text('Confirm Booking - ₹60', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16)),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: ElevatedButton(
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Parking reservation confirmed!')),
+              );
+              Navigator.of(context).pop();
+            },
+            child: const Text('Confirm Reservation • ₹60'),
+          ),
         ),
       ),
     );
@@ -78,11 +126,10 @@ class BookSpotScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8),
+        Text(label, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+        const SizedBox(height: 6),
         TextFormField(
           initialValue: initialValue,
-          decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
         ),
       ],
     );
@@ -92,35 +139,41 @@ class BookSpotScreen extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
-        const SizedBox(height: 8),
-        DropdownButtonFormField(
+        Text(label, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+        const SizedBox(height: 6),
+        DropdownButtonFormField<String>(
           initialValue: items.first,
-          items: items.map((item) => DropdownMenuItem(value: item, child: Text(item))).toList(),
-          onChanged: (value) {},
-          decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
+          items: items.map((item) => DropdownMenuItem(value: item, child: Text(item, style: const TextStyle(fontSize: 13)))).toList(),
+          onChanged: (_) {},
         ),
       ],
     );
   }
 
-  Widget _buildPriceBreakdown() {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Price Breakdown', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-            const Divider(height: 24),
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: const [Text('Base parking fee'), Text('₹30')]),
-            const SizedBox(height: 8),
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: const [Text('Hourly rate x 2 hours'), Text('₹30')]),
-            const Divider(height: 24),
-            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: const [Text('Total Amount', style: TextStyle(fontWeight: FontWeight.bold)), Text('₹60', style: TextStyle(fontWeight: FontWeight.bold))]),
-          ],
-        ),
+  Widget _buildPriceBreakdown(bool isDark) {
+    return AppCard(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Price Breakdown', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14)),
+          const SizedBox(height: 12),
+          const Divider(),
+          const SizedBox(height: 8),
+          const Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text('Base reservation fee', style: TextStyle(fontSize: 13)), Text('₹30', style: TextStyle(fontSize: 13))]),
+          const SizedBox(height: 6),
+          const Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text('Parking duration (2 hrs)', style: TextStyle(fontSize: 13)), Text('₹30', style: TextStyle(fontSize: 13))]),
+          const SizedBox(height: 8),
+          const Divider(),
+          const SizedBox(height: 8),
+          const Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Total Payable', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14)),
+              Text('₹60', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: AppColors.primaryDark)),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -130,32 +183,27 @@ class BookSpotScreen extends StatelessWidget {
       spacing: 8.0,
       runSpacing: 8.0,
       children: [
-        _buildServiceChip(Icons.ev_station, 'EV Charge', '+₹50'),
-        _buildServiceChip(Icons.wash, 'Car Wash', '+₹150'),
-        _buildServiceChip(Icons.local_parking_outlined, 'Valet', '+₹100'),
+        _buildServiceChip(Icons.ev_station_rounded, 'EV Charge', '+₹50'),
+        _buildServiceChip(Icons.wash_rounded, 'Eco Wash', '+₹150'),
+        _buildServiceChip(Icons.shield_outlined, 'Valet Park', '+₹100'),
       ],
     );
   }
 
   Widget _buildServiceChip(IconData icon, String label, String price) {
-    return Container(
+    return AppCard(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[300]!),
-      ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 20),
+          Icon(icon, size: 18, color: AppColors.primaryDark),
           const SizedBox(width: 8),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-              Text(price, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+              Text(label, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
+              Text(price, style: const TextStyle(fontSize: 10, color: AppColors.textSecondaryLight)),
             ],
           ),
         ],
@@ -167,35 +215,28 @@ class BookSpotScreen extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: Card(
-            margin: EdgeInsets.zero,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15), side: const BorderSide(color: Colors.green, width: 2)),
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                children: const [
-                  Text('Pay Now', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green, fontSize: 14)),
-                  SizedBox(height: 4),
-                  Text('Instant confirmation', textAlign: TextAlign.center, style: TextStyle(fontSize: 10)),
-                ],
-              ),
+          child: AppCard(
+            borderColor: AppColors.primary,
+            padding: const EdgeInsets.all(12.0),
+            child: const Column(
+              children: [
+                Text('Pay Now', style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.primaryDark, fontSize: 13)),
+                SizedBox(height: 2),
+                Text('Instant Pass', textAlign: TextAlign.center, style: TextStyle(fontSize: 10, color: AppColors.textSecondaryLight)),
+              ],
             ),
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 10),
         Expanded(
-          child: Card(
-            margin: EdgeInsets.zero,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-            child: Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Column(
-                children: const [
-                  Text('Pay Later', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                  SizedBox(height: 4),
-                  Text('Pay at exit', textAlign: TextAlign.center, style: TextStyle(fontSize: 10)),
-                ],
-              ),
+          child: AppCard(
+            padding: const EdgeInsets.all(12.0),
+            child: const Column(
+              children: [
+                Text('Pay at Exit', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
+                SizedBox(height: 2),
+                Text('Auto FASTag/Wallet', textAlign: TextAlign.center, style: TextStyle(fontSize: 10, color: AppColors.textSecondaryLight)),
+              ],
             ),
           ),
         ),

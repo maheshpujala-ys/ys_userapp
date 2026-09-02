@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yellowspotuser/core/theme/app_colors.dart';
+import 'package:yellowspotuser/core/theme/app_text_styles.dart';
+import 'package:yellowspotuser/core/widgets/app_card.dart';
+import 'package:yellowspotuser/core/widgets/app_status_pill.dart';
+import 'package:yellowspotuser/core/widgets/section_header.dart';
 
 class BookACarScreen extends ConsumerWidget {
   const BookACarScreen({super.key});
@@ -7,191 +12,245 @@ class BookACarScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-        title: const Text('Book a Car', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+        title: const Text('Book a Car & Rides'),
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+        physics: const BouncingScrollPhysics(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildPromoBanner(),
+            _buildPromoBanner(context),
+            const SizedBox(height: 20),
+            const SectionHeader(title: 'Quick Ride Booking'),
+            _buildRideSharingGrid(context),
+            const SizedBox(height: 20),
+            const SectionHeader(title: 'Car Rentals in Society'),
+            _buildCarRentalCard(context),
+            const SizedBox(height: 20),
+            const SectionHeader(title: 'Buy, Sell & Verify Cars'),
+            _buildCarPlatformList(context),
             const SizedBox(height: 24),
-            _buildSectionHeader(icon: Icons.local_taxi_outlined, title: 'Book a Ride'),
-            _buildRideSharingGrid(),
-            const SizedBox(height: 24),
-            _buildSectionHeader(icon: Icons.shopping_cart_outlined, title: 'Buy or Sell Cars'),
-            _buildCarPlatformList(),
-            const SizedBox(height: 24),
-            _buildSectionHeader(icon: Icons.key_outlined, title: 'Car Rentals'),
-            _buildCarRentalCard(),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildPromoBanner() {
-    return Card(
-      color: Colors.yellow[600],
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('First Ride Free!', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.black)),
-                  const Text('Get up to ₹100 off on your first cab ride', style: TextStyle(color: Colors.black87)),
-                  const SizedBox(height: 8),
-                  Chip(label: const Text('YELLOWFIRST', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)), backgroundColor: Colors.yellow[700]),
-                ],
-              ),
-            ),
-            const Icon(Icons.card_giftcard, size: 40, color: Colors.black54),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget _buildPromoBanner(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-  Widget _buildSectionHeader({required IconData icon, required String title}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12.0),
+    return AppCard(
+      color: isDark ? AppColors.surfaceElevatedDark : AppColors.primaryContainer,
+      borderColor: AppColors.primary,
+      padding: const EdgeInsets.all(16.0),
       child: Row(
         children: [
-          Icon(icon, color: Colors.blue[800]),
-          const SizedBox(width: 8),
-          Text(title, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      '🎉 First Ride Free!',
+                      style: AppTextStyles.titleSmall.copyWith(fontWeight: FontWeight.w800),
+                    ),
+                    const SizedBox(width: 8),
+                    const AppStatusPill(label: 'COUPON', type: StatusType.primary),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Get up to ₹100 off on your first doorstep cab booking',
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryDark,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text(
+                    'PROMO: YELLOWFIRST',
+                    style: TextStyle(fontWeight: FontWeight.w800, fontSize: 11, color: Colors.black87),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          const Icon(Icons.card_giftcard_rounded, size: 42, color: AppColors.primaryDark),
         ],
       ),
     );
   }
 
-  Widget _buildRideSharingGrid() {
+  Widget _buildRideSharingGrid(BuildContext context) {
     return GridView.count(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       crossAxisCount: 2,
-      childAspectRatio: 2.5,
-      crossAxisSpacing: 8,
-      mainAxisSpacing: 8,
+      childAspectRatio: 2.3,
+      crossAxisSpacing: 10,
+      mainAxisSpacing: 10,
       children: [
-        _buildRideServiceCard(name: 'Uber', subtitle: 'Global rides', icon: Icons.local_taxi, iconColor: Colors.black),
-        _buildRideServiceCard(name: 'Ola', subtitle: 'City rides', icon: Icons.directions_car, iconColor: Colors.green),
-        _buildRideServiceCard(name: 'Rapido', subtitle: 'Bike taxi', icon: Icons.motorcycle, iconColor: Colors.yellow[800]!),
-        _buildRideServiceCard(name: 'inDrive', subtitle: 'Bid your fare', icon: Icons.handshake_outlined, iconColor: Colors.blue),
+        _buildRideServiceCard(name: 'Uber', subtitle: 'Doorstep Pick', icon: Icons.local_taxi_rounded, iconColor: Colors.black87),
+        _buildRideServiceCard(name: 'Ola Cabs', subtitle: 'Prime & Mini', icon: Icons.directions_car_rounded, iconColor: Colors.green),
+        _buildRideServiceCard(name: 'Rapido', subtitle: 'Bike & Auto', icon: Icons.motorcycle_rounded, iconColor: AppColors.primaryDark),
+        _buildRideServiceCard(name: 'inDrive', subtitle: 'Bid your fare', icon: Icons.handshake_outlined, iconColor: AppColors.info),
       ],
     );
   }
 
-  Widget _buildRideServiceCard({required String name, required String subtitle, required IconData icon, required Color iconColor}) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      elevation: 1,
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Row(
-          children: [
-            CircleAvatar(
-              radius: 20,
-              backgroundColor: iconColor.withValues(alpha: 0.1),
-              child: Icon(icon, size: 20, color: iconColor),
+  Widget _buildRideServiceCard({
+    required String name,
+    required String subtitle,
+    required IconData icon,
+    required Color iconColor,
+  }) {
+    return AppCard(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      onTap: () {},
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
             ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                  Text(subtitle, style: const TextStyle(fontSize: 10, color: Colors.grey), overflow: TextOverflow.ellipsis),
-                ],
-              ),
-            )
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCarPlatformList() {
-    return Column(
-      children: [
-        _buildCarPlatformCard(name: 'Spinny', subtitle: 'Pre-owned cars', icon: Icons.verified_outlined, color: Colors.indigo),
-        _buildCarPlatformCard(name: 'Cars24', subtitle: 'Buy & Sell', icon: Icons.swap_horiz_outlined, color: Colors.orange),
-        _buildCarPlatformCard(name: 'CarDekho', subtitle: 'Expert research', icon: Icons.manage_search_outlined, color: Colors.blue),
-        _buildCarPlatformCard(name: 'CarWale', subtitle: 'Compare cars', icon: Icons.compare_arrows_outlined, color: Colors.red),
-      ],
-    );
-  }
-
-  Widget _buildCarPlatformCard({required String name, required String subtitle, required IconData icon, required Color color}) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: color.withValues(alpha: 0.1),
-          child: Icon(icon, color: color, size: 20),
-        ),
-        title: Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-        subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 14),
-      ),
-    );
-  }
-
-  Widget _buildCarRentalCard() {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+            child: Icon(icon, size: 20, color: iconColor),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                CircleAvatar(backgroundColor: Colors.blue[50], child: Icon(Icons.time_to_leave_outlined, color: Colors.blue[800])),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text('Self-Drive', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                    Text('Rent cars without driver', style: TextStyle(color: Colors.grey, fontSize: 12)),
-                  ],
+                Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                Text(
+                  subtitle,
+                  style: const TextStyle(fontSize: 10, color: AppColors.textSecondaryLight),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            Row(
-              children: [
-                _buildRentalChip('Zoomcar', Colors.green),
-                const SizedBox(width: 8),
-                _buildRentalChip('Revv', Colors.deepPurple),
-              ],
-            )
-          ],
-        ),
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCarRentalCard(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return AppCard(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.infoContainer,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.car_rental_rounded, color: AppColors.infoDark, size: 22),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Self-Drive Society Rentals', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 14)),
+                  Text(
+                    'Cars parked in Basement 1 for instant booking',
+                    style: TextStyle(
+                      color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              _buildRentalChip('Zoomcar • 5 Cars', Colors.green),
+              const SizedBox(width: 8),
+              _buildRentalChip('Revv • 3 SUVs', Colors.deepPurple),
+              const SizedBox(width: 8),
+              _buildRentalChip('MyChoize', Colors.blue),
+            ],
+          )
+        ],
       ),
     );
   }
 
   Widget _buildRentalChip(String label, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
-      child: Text(label, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 12)),
+      child: Text(label, style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 11)),
+    );
+  }
+
+  Widget _buildCarPlatformList(BuildContext context) {
+    return Column(
+      children: [
+        _buildCarPlatformCard(name: 'Spinny Assured', subtitle: '200-Point Inspection • 1 Yr Warranty', icon: Icons.verified_outlined, color: Colors.indigo),
+        const SizedBox(height: 8),
+        _buildCarPlatformCard(name: 'Cars24 Doorstep', subtitle: 'Instant Valuation & Society Pickup', icon: Icons.swap_horiz_outlined, color: Colors.deepOrange),
+        const SizedBox(height: 8),
+        _buildCarPlatformCard(name: 'CarDekho Expert', subtitle: 'New Car Pricing, On-Road Quotes & Reviews', icon: Icons.manage_search_outlined, color: Colors.blue),
+      ],
+    );
+  }
+
+  Widget _buildCarPlatformCard({
+    required String name,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+  }) {
+    return AppCard(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      onTap: () {},
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                Text(subtitle, style: const TextStyle(fontSize: 11, color: AppColors.textSecondaryLight)),
+              ],
+            ),
+          ),
+          const Icon(Icons.chevron_right_rounded, size: 18, color: AppColors.textMutedLight),
+        ],
+      ),
     );
   }
 }

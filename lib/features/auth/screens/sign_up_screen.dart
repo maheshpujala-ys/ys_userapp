@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:yellowspotuser/core/theme/app_colors.dart';
 import 'package:yellowspotuser/features/auth/application/auth_controller.dart';
 
 class SignUpScreen extends ConsumerStatefulWidget {
@@ -95,7 +96,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
               ElevatedButton(
                 onPressed: authState.isLoading ? null : _signUp,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.yellow[700],
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.black,
                   minimumSize: const Size.fromHeight(50),
                 ),
                 child: authState.isLoading 
